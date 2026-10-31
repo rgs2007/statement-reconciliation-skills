@@ -38,8 +38,14 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SKILL_DIR = "statement-reconciliation"
+# The orchestrator skill is the canonical source for the adapters: it is the
+# one that decides the flow, and the one a tool should load first. The
+# capability skills carry their own SKILL.md and are referenced from here.
+SKILL_DIR = "skills/statement-reconciliation"
 SKILL = os.path.join(ROOT, SKILL_DIR, "SKILL.md")
+SKILLS_ROOT = "skills"
+CAPABILITY_SKILLS = ["recon-discovery", "recon-engine", "recon-item-matching",
+                     "recon-decisions", "recon-reporting"]
 
 BANNER = ("<!-- GENERATED FILE — DO NOT EDIT.\n"
           "     Source: {src}\n"
@@ -82,18 +88,19 @@ def block(text: str, name: str) -> str:
 
 
 def rewrite_paths(s: str) -> str:
-    """Make skill-relative paths work from the repository root."""
-    for pat, repl in (
-        (r"`scripts/", f"`{SKILL_DIR}/scripts/"),
-        (r"`references/", f"`{SKILL_DIR}/references/"),
-        (r"`templates/", f"`{SKILL_DIR}/templates/"),
-        (r"(?<!/)\bpython scripts/", f"python {SKILL_DIR}/scripts/"),
-    ):
-        s = re.sub(pat, repl, s)
+    """Make skill-relative paths resolve from the repository root.
+
+    The orchestrator names sibling skills by directory (recon-engine/...), so
+    those gain the skills/ prefix. An adapter sits at the repository root and
+    a bare path would not resolve.
+    """
+    for name in CAPABILITY_SKILLS:
+        s = re.sub(rf"(?<![\w/]){re.escape(name)}/",
+                   f"{SKILLS_ROOT}/{name}/", s)
     return s
 
 
-MARKERS = ["core-rules", "workflow", "decision-log", "scripts", "traps"]
+MARKERS = ["core-rules", "shape", "skills", "plan", "traps"]
 
 
 # ------------------------------------------------------------------ renderers
@@ -102,18 +109,15 @@ def common_body(text: str, *, include: list[str]) -> str:
 
 
 def pointer_note(depth: str = "") -> str:
-    return (
-        f"The full method lives in [`{SKILL_DIR}/SKILL.md`]({SKILL_DIR}/SKILL.md) "
-        f"and its `references/` directory — one file per phase:\n\n"
-        f"| Phase | Read |\n|---|---|\n"
-        f"| Discovery — profiling, locating keys | `{SKILL_DIR}/references/discovery.md` |\n"
-        f"| Intake — Excel/PDF → clean tabular | `{SKILL_DIR}/references/intake.md` |\n"
-        f"| Matching — conventions, gaps, rollup | `{SKILL_DIR}/references/matching.md` |\n"
-        f"| Taxonomy — 12 root causes | `{SKILL_DIR}/references/taxonomy.md` |\n"
-        f"| Confidence — HIGH/MEDIUM/LOW rubric | `{SKILL_DIR}/references/confidence.md` |\n"
-        f"| Reporting — auditable structure | `{SKILL_DIR}/references/reporting.md` |\n\n"
-        f"Open the reference for the phase you are in. Do not try to hold all "
-        f"six in context at once.")
+    """Link list only — the `skills` block from SKILL.md carries the table."""
+    rows = "\n".join(
+        f"- [`{SKILLS_ROOT}/{n}/SKILL.md`]({SKILLS_ROOT}/{n}/SKILL.md)"
+        for n in CAPABILITY_SKILLS)
+    return (f"Each capability skill has its own `SKILL.md` and scripts:\n\n"
+            f"{rows}\n\n"
+            f"Open the one for the phase you are in. The orchestrator "
+            f"([`{SKILL_DIR}/SKILL.md`]({SKILL_DIR}/SKILL.md)) decides which "
+            f"run and in what order; it computes nothing.")
 
 
 def render_agents(text: str, fm: dict) -> str:
@@ -129,19 +133,19 @@ rationale and a confidence level.
 
 {fm['description']}
 
-{common_body(text, include=["core-rules", "workflow"])}
+{common_body(text, include=["core-rules", "shape"])}
 
 ## Where the detail is
 
 {pointer_note()}
 
-{common_body(text, include=["decision-log", "scripts", "traps"])}
+{common_body(text, include=["skills", "plan", "traps"])}
 
 ## Verifying your environment
 
 ```bash
 pip install -r requirements.txt
-python {SKILL_DIR}/scripts/selftest.py   # must print PASSED
+python {SKILLS_ROOT}/recon-engine/scripts/selftest.py   # must print PASSED
 python tests/run_tests.py                # golden-file regression suite
 ```
 
@@ -177,13 +181,13 @@ not installed.
 
 {fm['description']}
 
-{common_body(text, include=["core-rules", "workflow"])}
+{common_body(text, include=["core-rules", "shape"])}
 
 ## Where the detail is
 
 {pointer_note()}
 
-{common_body(text, include=["decision-log", "scripts", "traps"])}
+{common_body(text, include=["skills", "plan", "traps"])}
 
 ## Working on this repository
 
@@ -193,7 +197,7 @@ deliberately strict:
 ```bash
 python tests/run_tests.py                 # read any diff before blessing
 python tests/run_tests.py --update        # only after deciding it is correct
-python {SKILL_DIR}/scripts/selftest.py
+python {SKILLS_ROOT}/recon-engine/scripts/selftest.py
 python tools/sync_adapters.py --check     # adapters must match SKILL.md
 ```
 
@@ -214,7 +218,7 @@ file references below are followed, so the full method is one hop away.
 
 {fm['description']}
 
-{common_body(text, include=["core-rules", "workflow"])}
+{common_body(text, include=["core-rules", "shape"])}
 
 ## Read the phase reference before acting
 
@@ -222,12 +226,12 @@ file references below are followed, so the full method is one hop away.
 
 {pointer_note()}
 
-{common_body(text, include=["decision-log", "scripts", "traps"])}
+{common_body(text, include=["skills", "plan", "traps"])}
 
 ## Checks
 
 ```bash
-python {SKILL_DIR}/scripts/selftest.py
+python {SKILLS_ROOT}/recon-engine/scripts/selftest.py
 python tests/run_tests.py
 ```
 """
@@ -254,7 +258,7 @@ these yourself when you need them:
 `{SKILL_DIR}/references/<phase>.md` for discovery, intake, matching, taxonomy,
 confidence and reporting.
 
-{common_body(text, include=["core-rules", "workflow", "decision-log", "scripts", "traps"])}
+{common_body(text, include=["core-rules", "shape", "skills", "plan", "traps"])}
 """
 
 
@@ -271,7 +275,7 @@ alwaysApply: false
 
 {fm['description']}
 
-{common_body(text, include=["core-rules", "workflow"])}
+{common_body(text, include=["core-rules", "shape"])}
 
 ## Where the detail is
 
@@ -279,7 +283,7 @@ alwaysApply: false
 
 {pointer_note()}
 
-{common_body(text, include=["decision-log", "scripts", "traps"])}
+{common_body(text, include=["skills", "plan", "traps"])}
 """
 
 

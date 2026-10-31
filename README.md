@@ -23,7 +23,7 @@ a plain checkout works immediately:
 
 | Tool | Reads |
 |---|---|
-| Claude Code | `CLAUDE.md`, or install as a skill (below) |
+| Claude Code | `CLAUDE.md`, or install the skills (below) |
 | GitHub Copilot | `.github/copilot-instructions.md` + `.github/instructions/` |
 | Codex CLI, Cursor, Windsurf, Gemini CLI/Jules, Amp, Devin, Aider, OpenCode, goose, Junie, Zed, Warp, Factory | `AGENTS.md` |
 | Cursor (native rules) | `.cursor/rules/statement-reconciliation.mdc` |
@@ -34,7 +34,7 @@ cannot disagree.
 
 For anything else — or a tool with no file access — see
 [`docs/PORTABLE_USAGE.md`](docs/PORTABLE_USAGE.md). The short version: point it
-at `statement-reconciliation/SKILL.md`, or paste `AGENTS.md` in as a system
+at `skills/statement-reconciliation/SKILL.md`, or paste `AGENTS.md` in as a system
 prompt. It is self-contained.
 
 ### Claude Code as a skill (best experience)
@@ -44,10 +44,10 @@ and the references load per phase so simple jobs stay cheap:
 
 ```bash
 mkdir -p .claude/skills
-cp -r statement-reconciliation .claude/skills/        # this project
+cp -r skills/* .claude/skills/                        # this project
 
 mkdir -p ~/.claude/skills
-cp -r statement-reconciliation ~/.claude/skills/      # every project
+cp -r skills/* ~/.claude/skills/                      # every project
 ```
 
 Then ask something like *"these two statements don't tie out, can you work out
@@ -59,7 +59,7 @@ The deterministic engine needs no model, which makes it usable from CI or a
 scheduled job:
 
 ```bash
-python statement-reconciliation/scripts/reconcile.py datamap.json \
+python skills/recon-engine/scripts/reconcile.py datamap.json \
        --out runs/run-001 --decisions decisions.jsonl
 ```
 
@@ -82,44 +82,44 @@ Python 3.10+. The scripts are deliberately dependency-light so they run in restr
 ## Layout
 
 ```
-statement-reconciliation/
-  SKILL.md                      orchestrator: rules, workflow, traps
-  references/
-    discovery.md                profiling, tiered exposure, locating keys
-    intake.md                   guided Excel/PDF/CSV → clean tabular
-    matching.md                 sign convention, attribution, gaps, rollup
-    taxonomy.md                 12 root causes with signatures + remediation
-    confidence.md               HIGH/MEDIUM/LOW rubric
-    reporting.md                auditable report structure
-  scripts/
-    profile_files.py            masked structural profiler (csv/xlsx/pdf)
-    reconcile.py                deterministic engine + structural detectors
-    match_items.py              item matching incl. bounded subset-sum
-    decisions.py                decision log: validate/append/resolve/replay
-    make_report.py              auditable report generator (en/pt/es headings)
-    selftest.py                 control + fault-injection test suite
-  templates/
-    decisions.schema.json       append-only decision log, closed vocabulary
+skills/
+  statement-reconciliation/   orchestrator — chooses the shape and the flow,
+    SKILL.md                  computes nothing
+  recon-discovery/            profile files (values masked), Excel/PDF intake
+    SKILL.md
+    scripts/profile_files.py
+  recon-engine/               ALL arithmetic lives here
+    SKILL.md
+    scripts/lib.py            canonical: amounts, keys, decision-log read side
+    scripts/reconcile.py      one-shot standard roll-forward plan
+    scripts/selftest.py
+    scripts/steps/            12 composable steps the caller sequences
+  recon-item-matching/
+    SKILL.md
+    scripts/match_items.py    exact → amount → subset-sum → timing
+  recon-decisions/
+    SKILL.md
+    scripts/decisions.py      validate / append / resolve / replay
+    templates/decisions.schema.json
+  recon-reporting/
+    SKILL.md
+    scripts/make_report.py    auditable report (en/pt/es headings)
 
-AGENTS.md                       generated — cross-tool standard
-CLAUDE.md                       generated — Claude Code
-.github/copilot-instructions.md generated — Copilot, repo-wide
-.github/instructions/           generated — Copilot, path-scoped (applyTo)
-.cursor/rules/                  generated — Cursor native rules
-docs/PORTABLE_USAGE.md          generated — using it with any other tool
-tools/sync_adapters.py          regenerates all of the above from SKILL.md
+AGENTS.md                     generated — cross-tool standard
+CLAUDE.md                     generated — Claude Code
+.github/copilot-instructions.md, .github/instructions/   generated — Copilot
+.cursor/rules/                generated — Cursor
+docs/PORTABLE_USAGE.md        generated — any other tool
+tools/sync_adapters.py        regenerates the above from the orchestrator
+tools/sync_lib.py             vendors lib.py into the other skills
 
-tests/                          golden-file regression suite — see tests/README.md
-  run_tests.py                  regenerate and compare against expected output
-  make_fixtures.py              reproducible fixture sources
-  test_golden.py                pytest wrapper
-  fixtures/NN-name/
-    sources/                    committed input files
-    datamap.json                how the engine reads them
-    expected/                   the blessed expected report
+tests/                        golden-file + step-equivalence suites
 ```
 
-The agent reads `SKILL.md` first and pulls in a reference only when it reaches that phase, so context stays small on simple jobs.
+Each skill installs and runs on its own. Where two skills need the same
+calculation, the canonical `lib.py` is **vendored** rather than imported across
+skills — a cross-skill import would break a solo install — and
+`tools/sync_lib.py --check` fails CI if a copy drifts.
 
 ## Using the scripts directly
 
@@ -176,7 +176,7 @@ python scripts/selftest.py
 **Net and gross are always reported separately.** They answer different questions — how much money is unexplained versus how much activity is misposted. A reconciliation can have a trivial net gap and a large gross one, and reporting only the net hides real control failures.
 
 **One source of truth for guidance.** Every instruction file in the repo is
-generated from `statement-reconciliation/SKILL.md` by
+generated from `skills/statement-reconciliation/SKILL.md` by
 `tools/sync_adapters.py`, and CI fails if any drifts. Six hand-maintained
 copies of the same rules would disagree within a week, and drifted guidance is
 worse than none — it reads as authoritative while being wrong. Edit `SKILL.md`,
@@ -211,7 +211,7 @@ cannot silently erase the contract a fixture was written to defend.
 installs it can verify their install with no repo checkout:
 
 ```bash
-python statement-reconciliation/scripts/selftest.py
+python skills/recon-engine/scripts/selftest.py
 # PASSED · control clean, all five faults detected, replay and report OK
 ```
 

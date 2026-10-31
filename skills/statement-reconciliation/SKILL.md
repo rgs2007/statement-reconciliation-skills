@@ -1,0 +1,164 @@
+---
+name: statement-reconciliation
+description: Reconcile financial statements, ledgers, trial balances, bank statements, sub-ledgers or account extracts that do not tie out, and explain every discrepancy with evidence, rationale and a confidence level. Frames the job, picks the right reconciliation shape, and sequences the recon-discovery, recon-engine, recon-item-matching, recon-decisions and recon-reporting skills. Use this skill whenever the user mentions reconciliation, "doesn't balance", "doesn't tie out", "out of balance", a gap/variance/difference between two sets of figures, opening vs closing balances, statement vs ledger differences, month-end or year-end close, unexplained variances, or hands over ledger/balance/transaction files and asks why the numbers disagree — even if they never use the word "reconciliation".
+---
+
+# Statement Reconciliation — orchestrator
+
+Find why two sets of figures disagree, prove each cause with evidence, and
+report it so an accountant can act on it and an auditor can follow it.
+
+**This skill decides _which_ steps run and _on what data_. It never computes a
+figure.** All arithmetic lives in code, in the companion skills. That division
+is what makes the result reproducible: the flow is a judgement call, recorded
+like any other; the numbers are not a judgement call at all.
+
+<!-- shared:core-rules -->
+## Non-negotiable rules
+
+**1. Mirror the user's language.** Detect the language of the user's message and reply in that language — every question, explanation and report narrative. Switch immediately if the user switches. Do **not** translate these, they stay stable for tooling and audit: category codes (`MISSING_MOVEMENTS`, `SCOPE_MISMATCH`, …), confidence labels (`HIGH`/`MEDIUM`/`LOW`), JSON keys, column names, account keys, file names. Everything a human reads is in their language; everything a machine reads stays in English. The report gets a short English glossary of the codes used.
+
+**2. Never guess a number.** Every figure must come from a step that actually ran. If you did not run the step, you do not have the number — say so. Do not compute a gap, a total or a percentage yourself, even when it looks trivial.
+
+**3. The user owns every judgement call.** Recording an assumption as a decision is fine. Inventing one is not. When the data is ambiguous, ask.
+
+**4. Deterministic first, model last.** The steps resolve the overwhelming majority of rows. Reserve judgement for the residue that survives them.
+
+**5. Read structure, not the corpus.** Profile files and work on samples, aggregates and residuals. Never load an entire large ledger into the conversation — it costs far more and produces worse answers than a targeted slice.
+<!-- /shared:core-rules -->
+
+## Phase 0 — Frame the job before touching data
+
+Establish and write down:
+
+- **The two sides.** Ledger vs statement? Opening + movements vs closing? Sub-ledger vs control account? System A vs system B?
+- **The period**, and whether both sides cover exactly it.
+- **The unit of reconciliation** — per account, per document, per counterparty, per invoice.
+- **Materiality** — what size difference is worth chasing. Ask; do not assume zero.
+
+Ask as a short numbered list in the user's language. If the user does not know,
+propose a default and let them correct it.
+
+<!-- shared:shape -->
+## Choose the shape
+
+Reconciliation is not one procedure. Pick the shape from what the data *is*,
+not from habit — the wrong shape produces confident nonsense.
+
+| Shape | You have | Equation | Plan |
+|---|---|---|---|
+| **Roll-forward** (continuity, proof of balance) | opening, closing, and transactions | `closing = opening ± movements` | the full plan below |
+| **Two-sided matching** (bank rec, sub-ledger vs GL, supplier statement) | two independent listings of the same population | `side A = side B` | load both, `equation --no-movements`, then `recon-item-matching` |
+| **Balance-only** (confirmation, custodian) | two numbers, no detail | `A = B` | load both, `equation --no-movements`; explain with adjustments, there is nothing to match |
+| **Three-way match** | PO, goods receipt, invoice | all three agree | `recon-item-matching` pairwise; the engine does not model this |
+| **System-to-system** (migration, cutover) | the same population in two systems | `A = B` per key | two-sided, then item matching on breaks |
+
+If the shape is genuinely unclear, ask — one question here saves an entire
+wrong analysis. A gap explained under the wrong equation is worse than no
+answer, because it looks finished.
+<!-- /shared:shape -->
+
+<!-- shared:skills -->
+## The skills, and when each is used
+
+| Skill | Use it for |
+|---|---|
+| `recon-discovery` | Profile the files; find where keys and amounts live; convert Excel/PDF to clean tabular |
+| `recon-engine` | The arithmetic: load, aggregate, solve the sign convention, compute gaps, run detectors |
+| `recon-item-matching` | A broken account with itemised detail on both sides; lump payments settling several invoices |
+| `recon-decisions` | Record and replay every judgement call; grade confidence |
+| `recon-reporting` | Classify breaks into root causes and produce the auditable report |
+
+Load a skill when you reach the phase that needs it. Do not try to hold all
+five in context at once.
+<!-- /shared:skills -->
+
+<!-- shared:plan -->
+## The standard roll-forward plan
+
+Run from `recon-engine/scripts/steps/`. Each step prints JSON; read it before
+choosing the next one.
+
+```bash
+# 1 — one load per side you actually have
+load.py --run runs/r1 --role opening   --path sources/open.csv  --amount balance --key-from account
+load.py --run runs/r1 --role closing   --path sources/close.csv --amount balance --key-from account
+load.py --run runs/r1 --role movements --path sources/mov.csv   --amount value   --key-from desc1 desc2
+
+# 2 — apply the decision log (skip only on a first baseline pass)
+decide.py --run runs/r1 --decisions decisions.jsonl
+
+# 3 — the spine
+aggregate.py  --run runs/r1
+convention.py --run runs/r1          # omit for a two-sided job
+equation.py   --run runs/r1          # add --no-movements for a two-sided job
+
+# 4 — detectors, in any order, or in parallel
+detect_siblings.py      --run runs/r1
+detect_decimal_shift.py --run runs/r1
+detect_duplicates.py    --run runs/r1
+detect_reversals.py     --run runs/r1
+resolve_signals.py      --run runs/r1
+
+# 5 — finish
+residual.py  --run runs/r1
+summarize.py --run runs/r1 --out runs/r1/report-input
+```
+
+Then `recon-reporting/scripts/make_report.py runs/r1/report-input --lang <user language>`.
+
+For an ordinary roll-forward job the one-shot
+`recon-engine/scripts/reconcile.py datamap.json --out runs/r1` runs the whole
+standard plan in a single call and produces identical figures. Use the steps
+when the shape is non-standard, when you need to inspect intermediate state,
+or when you want to add a detector.
+
+## What you may and may not vary
+
+The steps enforce their own preconditions, so a wrong order fails loudly
+instead of producing a wrong number. Still, know why the constraints exist:
+
+- **The spine is ordered by dependency**, not convention: aggregate → convention → equation. You cannot solve a sign convention before aggregating, or compute status before the convention.
+- **Every detector requires `equation`.** `detect_duplicates` especially: it is gated on break status, and that gate is what stops a clean ledger reporting false duplicates. `detect_reversals` is the one exception — it needs only the movements.
+- **Detector order is irrelevant.** Precedence is declared by priority in `resolve_signals`, not by call order. Run them in any sequence.
+- **Skipping a step is allowed and recorded.** `summarize` reports which detectors did not run, as caveats in the output. A cause you did not test for is not a cause you ruled out — say that in the report rather than implying coverage you do not have.
+<!-- /shared:plan -->
+
+## Reporting
+
+Produce a report covering scope and control totals, the headline gap, findings
+ranked by amount, and open questions. Every finding carries evidence,
+rationale, confidence, alternative explanations and a remediation step. Never
+present one explanation as settled when another fits the same evidence.
+
+`make_report.py` leaves placeholders for rationale, alternatives and
+remediation. The scripts guarantee the figures and the audit trail; writing the
+reasoning from the evidence is your job, in the user's language. Never deliver
+a report with placeholders still in it.
+
+## Interviewing the user
+
+The user can see the data; you mostly see structure. That asymmetry shapes
+every question.
+
+- Ask about **one thing at a time**, with the masked evidence that prompted it visible.
+- Always offer a **default** and a **don't know** path.
+- Prefer questions whose answer moves the most money. Sort open questions by the gap they would explain.
+- Never ask what can be computed. Compute it and confirm.
+
+Good: "Rows 4–9 repeat the same amount and reference. Are these genuinely
+separate instalments, or is one row duplicated by the export? This affects
+183,600.00."
+
+Bad: "Is your data clean?"
+
+<!-- shared:traps -->
+## Known traps
+
+- Sign convention is an **empirical question**. `convention.py` solves it and reports both counts. Never assume from column names. If the two score alike it is *not* established — investigate rather than picking one.
+- Try the **plain** key extraction first (key at the head of the description), before any client-specific pattern. The generic rule catches most ordinary exports.
+- **Duplicate-looking rows may be legitimate** repeated instalments. One discriminator is decisive: if the account ties exactly, a repeated row cannot be a spurious extra posting, so the rows are real. Where the account breaks, the ambiguity genuinely remains — ask, never de-duplicate automatically.
+- **Scope mismatch usually dominates.** Accounts on one side only will swamp every other cause. `equation.py` separates them as `CLOSING_ONLY`/`OPENING_ONLY`/`MOVEMENT_ONLY`; quantify them before analysing anything else.
+- **Offsetting sibling sub-accounts** are posting errors, not missing money. Compare `gap_gross` with `gap_gross_at_parent` to size it.
+- **Report net and gross separately.** Gross is how much activity is misposted; net is how much value is unexplained. A reconciliation can have a trivial net gap and a large gross one, and reporting only the net hides a real control failure.
+<!-- /shared:traps -->

@@ -25,6 +25,18 @@ import os
 import re
 import sys
 
+# Decimal-style detection comes from lib.py so the profiler and the engine
+# can never disagree about what a number is. Vendored by tools/sync_lib.py.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lib import detect_style as _detect_style  # noqa: E402
+
+
+def detect_decimal_style(samples) -> str | None:
+    """Thin adapter: lib works on a Series, callers here pass a list."""
+    import pandas as _pd
+    return _detect_style(_pd.Series(list(samples), dtype="object"))
+
+
 MASK_LEN = 24
 
 
@@ -80,18 +92,6 @@ def amount_columns(cols: list[str]) -> list[str]:
     return [c for c in cols if any(t in str(c).lower() for t in toks)]
 
 
-def detect_decimal_style(samples: list[str]) -> str | None:
-    """Infer 'comma' (1.234,56) or 'dot' (1,234.56) from numeric-looking text."""
-    comma = dot = 0
-    for s in samples:
-        s = str(s).strip()
-        if re.fullmatch(r"-?[\d.]+,\d{1,2}", s):
-            comma += 1
-        elif re.fullmatch(r"-?[\d,]+\.\d{1,2}", s):
-            dot += 1
-    if comma == dot == 0:
-        return None
-    return "comma" if comma > dot else "dot"
 
 
 # --------------------------------------------------------------------------

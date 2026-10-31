@@ -1,4 +1,47 @@
-# Phase 5 — Confidence
+---
+name: recon-decisions
+description: Record, validate and replay the judgement calls behind a reconciliation, and grade each finding's confidence as HIGH, MEDIUM or LOW with the evidence that would raise it. Use this skill whenever a reconciliation decision needs recording or justifying — excluding an account from scope, mapping an unattributable transaction, setting materiality, fixing a sign convention, or classifying a break — and whenever an auditable trail is needed showing who decided what, when, why and on what evidence.
+---
+
+# Decisions and confidence
+
+Every judgement call is appended to `decisions.jsonl` as one JSON object.
+Never rewrite or delete a line; supersede it with a new one. This file plus
+the source hashes is what makes a run reproducible and defensible.
+
+```bash
+python scripts/decisions.py validate decisions.jsonl   # before every run
+python scripts/decisions.py show     decisions.jsonl   # effective set
+python scripts/decisions.py history  decisions.jsonl   # chronological trail
+python scripts/decisions.py resolve  decisions.jsonl   # effective set as JSON
+python scripts/decisions.py append   decisions.jsonl \
+    --actor user --kind exclude_scope \
+    --statement '{"keys":["2432-01"]}' \
+    --reason "Loans are maintained in treasury; out of scope here." \
+    --evidence '{"balance":250000000}' --confidence HIGH
+```
+
+Required on every entry: `id`, `ts`, `actor` (`user` | `agent` | `engine`),
+`kind`, `statement`, `reason`, `confidence`. Full schema and the closed list
+of `kind` values: `templates/decisions.schema.json`.
+
+**The vocabulary is closed on purpose.** If a decision does not fit one of the
+allowed `kind` values, do not invent one — raise it as an open question
+instead. A fixed vocabulary is what keeps the log reviewable.
+
+Keys may be written in their natural form (`1400-01`); the engine
+canonicalises them.
+
+Replay is what ties figures to reasons: `reconcile.py --decisions
+decisions.jsonl`, or the `decide` step in a sequenced run. The engine refuses
+to run on an invalid log, so validate first.
+
+`scripts/lib.py` is a vendored copy of the canonical core
+(`recon-engine/scripts/lib.py`) and holds the read side — the vocabulary,
+`load`, `validate` and `resolve`. This skill owns authoring. Never edit the
+vendored copy; edit the canonical one and re-run `tools/sync_lib.py`.
+
+---
 
 Every finding carries a confidence label. The label is a claim about *evidence*, not about how plausible the story feels.
 

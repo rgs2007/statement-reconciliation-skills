@@ -1,5 +1,5 @@
 <!-- GENERATED FILE — DO NOT EDIT.
-     Source: statement-reconciliation/SKILL.md
+     Source: skills/statement-reconciliation/SKILL.md
      Regenerate: python tools/sync_adapters.py
      CI fails if this file is stale. -->
 
@@ -7,7 +7,7 @@
 
 Claude Code does not read `AGENTS.md`, so this file carries the same guidance.
 [`AGENTS.md`](AGENTS.md) is the tool-agnostic copy; both are generated from
-[`statement-reconciliation/SKILL.md`](statement-reconciliation/SKILL.md).
+[`skills/statement-reconciliation/SKILL.md`](skills/statement-reconciliation/SKILL.md).
 
 ## Preferred: install as a skill
 
@@ -15,8 +15,8 @@ This repository *is* a skill. Installed, it triggers on description alone with
 no instruction file needed:
 
 ```bash
-mkdir -p .claude/skills && cp -r statement-reconciliation .claude/skills/   # this project
-mkdir -p ~/.claude/skills && cp -r statement-reconciliation ~/.claude/skills/  # everywhere
+mkdir -p .claude/skills && cp -r skills/statement-reconciliation .claude/skills/   # this project
+mkdir -p ~/.claude/skills && cp -r skills/statement-reconciliation ~/.claude/skills/  # everywhere
 ```
 
 This file is the fallback for working *on* the repository, or when the skill is
@@ -24,102 +24,119 @@ not installed.
 
 ## When this applies
 
-Reconcile financial statements, ledgers, trial balances, bank statements, sub-ledgers or account extracts that do not tie out, and explain every discrepancy with evidence, rationale and a confidence level. Drives the user through discovery, guided file intake, matching and root-cause diagnosis, then produces an auditable report. Use this skill whenever the user mentions reconciliation, "doesn't balance", "doesn't tie out", "out of balance", a gap/variance/difference between two sets of figures, opening vs closing balances, statement vs ledger differences, month-end or year-end close, unexplained variances, or hands over ledger/balance/transaction files and asks why the numbers disagree — even if they never use the word "reconciliation".
+Reconcile financial statements, ledgers, trial balances, bank statements, sub-ledgers or account extracts that do not tie out, and explain every discrepancy with evidence, rationale and a confidence level. Frames the job, picks the right reconciliation shape, and sequences the recon-discovery, recon-engine, recon-item-matching, recon-decisions and recon-reporting skills. Use this skill whenever the user mentions reconciliation, "doesn't balance", "doesn't tie out", "out of balance", a gap/variance/difference between two sets of figures, opening vs closing balances, statement vs ledger differences, month-end or year-end close, unexplained variances, or hands over ledger/balance/transaction files and asks why the numbers disagree — even if they never use the word "reconciliation".
 
 ## Non-negotiable rules
 
 **1. Mirror the user's language.** Detect the language of the user's message and reply in that language — every question, explanation and report narrative. Switch immediately if the user switches. Do **not** translate these, they stay stable for tooling and audit: category codes (`MISSING_MOVEMENTS`, `SCOPE_MISMATCH`, …), confidence labels (`HIGH`/`MEDIUM`/`LOW`), JSON keys, column names, account keys, file names. Everything a human reads is in their language; everything a machine reads stays in English. The report gets a short English glossary of the codes used.
 
-**2. Never guess a number.** Every figure in the output must come from a computation actually run on the data. If something cannot be computed, say so.
+**2. Never guess a number.** Every figure must come from a step that actually ran. If you did not run the step, you do not have the number — say so. Do not compute a gap, a total or a percentage yourself, even when it looks trivial.
 
 **3. The user owns every judgement call.** Recording an assumption as a decision is fine. Inventing one is not. When the data is ambiguous, ask.
 
-**4. Deterministic first, model last.** Arithmetic, regex and set logic resolve the overwhelming majority of rows. Reserve judgement for the residue that survives them.
+**4. Deterministic first, model last.** The steps resolve the overwhelming majority of rows. Reserve judgement for the residue that survives them.
 
-**5. Read structure, not the corpus.** Profile files and work on samples, aggregates and residuals. Never load an entire large ledger into the conversation — it costs far more and produces worse answers than a targeted slice. See `statement-reconciliation/references/discovery.md`.
+**5. Read structure, not the corpus.** Profile files and work on samples, aggregates and residuals. Never load an entire large ledger into the conversation — it costs far more and produces worse answers than a targeted slice.
 
-## Workflow
+## Choose the shape
 
-Work in order. Do not skip ahead to a verdict — an unexplained gap is almost always several causes stacked on top of each other, and the big one hides the rest.
+Reconciliation is not one procedure. Pick the shape from what the data *is*,
+not from habit — the wrong shape produces confident nonsense.
 
-| Phase | Goal | Reference |
-|---|---|---|
-| 0 · Frame | What reconciles against what, over what period | below |
-| 1 · Discover | Profile the files, locate keys and amounts | `statement-reconciliation/references/discovery.md` |
-| 2 · Intake | Get non-CSV sources into clean tabular form | `statement-reconciliation/references/intake.md` |
-| 3 · Match | Build the balance equation, attribute transactions | `statement-reconciliation/references/matching.md` |
-| 4 · Diagnose | Classify every break by root cause | `statement-reconciliation/references/taxonomy.md` |
-| 5 · Grade | Assign confidence and alternatives | `statement-reconciliation/references/confidence.md` |
-| 6 · Report | Auditable output | `statement-reconciliation/references/reporting.md` |
+| Shape | You have | Equation | Plan |
+|---|---|---|---|
+| **Roll-forward** (continuity, proof of balance) | opening, closing, and transactions | `closing = opening ± movements` | the full plan below |
+| **Two-sided matching** (bank rec, sub-ledger vs GL, supplier statement) | two independent listings of the same population | `side A = side B` | load both, `equation --no-movements`, then `recon-item-matching` |
+| **Balance-only** (confirmation, custodian) | two numbers, no detail | `A = B` | load both, `equation --no-movements`; explain with adjustments, there is nothing to match |
+| **Three-way match** | PO, goods receipt, invoice | all three agree | `recon-item-matching` pairwise; the engine does not model this |
+| **System-to-system** (migration, cutover) | the same population in two systems | `A = B` per key | two-sided, then item matching on breaks |
+
+If the shape is genuinely unclear, ask — one question here saves an entire
+wrong analysis. A gap explained under the wrong equation is worse than no
+answer, because it looks finished.
 
 ## Where the detail is
 
-The full method lives in [`statement-reconciliation/SKILL.md`](statement-reconciliation/SKILL.md) and its `references/` directory — one file per phase:
+Each capability skill has its own `SKILL.md` and scripts:
 
-| Phase | Read |
+- [`skills/recon-discovery/SKILL.md`](skills/recon-discovery/SKILL.md)
+- [`skills/recon-engine/SKILL.md`](skills/recon-engine/SKILL.md)
+- [`skills/recon-item-matching/SKILL.md`](skills/recon-item-matching/SKILL.md)
+- [`skills/recon-decisions/SKILL.md`](skills/recon-decisions/SKILL.md)
+- [`skills/recon-reporting/SKILL.md`](skills/recon-reporting/SKILL.md)
+
+Open the one for the phase you are in. The orchestrator ([`skills/statement-reconciliation/SKILL.md`](skills/statement-reconciliation/SKILL.md)) decides which run and in what order; it computes nothing.
+
+## The skills, and when each is used
+
+| Skill | Use it for |
 |---|---|
-| Discovery — profiling, locating keys | `statement-reconciliation/references/discovery.md` |
-| Intake — Excel/PDF → clean tabular | `statement-reconciliation/references/intake.md` |
-| Matching — conventions, gaps, rollup | `statement-reconciliation/references/matching.md` |
-| Taxonomy — 12 root causes | `statement-reconciliation/references/taxonomy.md` |
-| Confidence — HIGH/MEDIUM/LOW rubric | `statement-reconciliation/references/confidence.md` |
-| Reporting — auditable structure | `statement-reconciliation/references/reporting.md` |
+| `recon-discovery` | Profile the files; find where keys and amounts live; convert Excel/PDF to clean tabular |
+| `recon-engine` | The arithmetic: load, aggregate, solve the sign convention, compute gaps, run detectors |
+| `recon-item-matching` | A broken account with itemised detail on both sides; lump payments settling several invoices |
+| `recon-decisions` | Record and replay every judgement call; grade confidence |
+| `recon-reporting` | Classify breaks into root causes and produce the auditable report |
 
-Open the reference for the phase you are in. Do not try to hold all six in context at once.
+Load a skill when you reach the phase that needs it. Do not try to hold all
+five in context at once.
 
-## The decision log — how auditability actually works
+## The standard roll-forward plan
 
-Every judgement call is appended to `decisions.jsonl` as one JSON object. Never rewrite or delete a line; supersede it with a new one. This file plus the source hashes is what makes a run reproducible and defensible.
-
-Required on every entry: `id`, `ts`, `actor` (`user` | `agent` | `engine`), `kind`, `statement`, `reason`, `evidence`, `confidence`. Full schema and the closed list of `kind` values: `statement-reconciliation/templates/decisions.schema.json`.
-
-If a proposed decision does not fit one of the allowed `kind` values, do not invent a new one — report it as an open question instead. The fixed vocabulary is what keeps the log reviewable.
-
-Re-running replays the log from the top, so the numbers always match the stated reasons: `reconcile.py --decisions decisions.jsonl`. Validate with `decisions.py validate` before every run — the engine refuses to run on an invalid log.
-
-Keys in decisions may be written in their natural form (`1400-01`); the engine canonicalises them.
-
-## Scripts
-
-| Script | Does |
-|---|---|
-| `profile_files.py` | Structure and masked previews for csv/xlsx/pdf — understand a file without exposing values |
-| `reconcile.py` | Engine: normalise, attribute, solve the sign convention, compute gaps, detect structural signatures, replay decisions |
-| `match_items.py` | Item-level matching for a broken key: exact → amount → bounded subset-sum → timing |
-| `decisions.py` | Validate, append, resolve and replay the decision log |
-| `make_report.py` | Generate `report.md` skeleton with correct figures, audit trail and glossary |
-| `selftest.py` | Prove the toolchain: clean ledger must reconcile 100%; five injected faults must all surface |
-
-Typical sequence:
+Run from `skills/recon-engine/scripts/steps/`. Each step prints JSON; read it before
+choosing the next one.
 
 ```bash
-python statement-reconciliation/scripts/profile_files.py sources/*            # phase 1
-python statement-reconciliation/scripts/reconcile.py datamap.json --out runs/run-001 \
-       --decisions decisions.jsonl                   # phase 3
-python statement-reconciliation/scripts/match_items.py left.csv right.csv --amount value --ref doc \
-       --out runs/run-001                            # phase 3, broken keys only
-python statement-reconciliation/scripts/decisions.py append decisions.jsonl --actor user --kind ... # phase 4-5
-python statement-reconciliation/scripts/make_report.py runs/run-001 --decisions decisions.jsonl \
-       --lang <user language> --out report.md        # phase 6
+# 1 — one load per side you actually have
+load.py --run runs/r1 --role opening   --path sources/open.csv  --amount balance --key-from account
+load.py --run runs/r1 --role closing   --path sources/close.csv --amount balance --key-from account
+load.py --run runs/r1 --role movements --path sources/mov.csv   --amount value   --key-from desc1 desc2
+
+# 2 — apply the decision log (skip only on a first baseline pass)
+decide.py --run runs/r1 --decisions decisions.jsonl
+
+# 3 — the spine
+aggregate.py  --run runs/r1
+convention.py --run runs/r1          # omit for a two-sided job
+equation.py   --run runs/r1          # add --no-movements for a two-sided job
+
+# 4 — detectors, in any order, or in parallel
+detect_siblings.py      --run runs/r1
+detect_decimal_shift.py --run runs/r1
+detect_duplicates.py    --run runs/r1
+detect_reversals.py     --run runs/r1
+resolve_signals.py      --run runs/r1
+
+# 5 — finish
+residual.py  --run runs/r1
+summarize.py --run runs/r1 --out runs/r1/report-input
 ```
 
-Run `selftest.py` after changing any script. All are dependency-light (pandas; openpyxl and pdfplumber only for those formats). Run them; do not reimplement their logic inline.
+Then `skills/recon-reporting/scripts/make_report.py runs/r1/report-input --lang <user language>`.
 
-**`make_report.py` leaves placeholders** for rationale, alternatives considered and remediation. The script guarantees the figures and the audit trail; writing the reasoning from the evidence is the agent's job, in the user's language. Never deliver a report with placeholders still in it.
+For an ordinary roll-forward job the one-shot
+`skills/recon-engine/scripts/reconcile.py datamap.json --out runs/r1` runs the whole
+standard plan in a single call and produces identical figures. Use the steps
+when the shape is non-standard, when you need to inspect intermediate state,
+or when you want to add a detector.
+
+## What you may and may not vary
+
+The steps enforce their own preconditions, so a wrong order fails loudly
+instead of producing a wrong number. Still, know why the constraints exist:
+
+- **The spine is ordered by dependency**, not convention: aggregate → convention → equation. You cannot solve a sign convention before aggregating, or compute status before the convention.
+- **Every detector requires `equation`.** `detect_duplicates` especially: it is gated on break status, and that gate is what stops a clean ledger reporting false duplicates. `detect_reversals` is the one exception — it needs only the movements.
+- **Detector order is irrelevant.** Precedence is declared by priority in `resolve_signals`, not by call order. Run them in any sequence.
+- **Skipping a step is allowed and recorded.** `summarize` reports which detectors did not run, as caveats in the output. A cause you did not test for is not a cause you ruled out — say that in the report rather than implying coverage you do not have.
 
 ## Known traps
 
-These cost real time when they are missed. Details in the references.
-
-- Sign convention is an **empirical question**. Test `closing = opening + movements` and `closing = opening − movements` and adopt whichever reconciles more accounts. Never assume from column names.
-- Try the **plain** key extraction first (key at the head of the description), before any client-specific pattern. A generic fallback catches most ordinary exports.
-- **Duplicate-looking rows may be legitimate** repeated instalments. Blanket de-duplication can make a reconciliation worse. Always ask. One discriminator is decisive: if the account ties exactly, a repeated row cannot be a spurious extra posting, so the rows are real. Where the account breaks, the ambiguity genuinely remains.
-- **Scope mismatch usually dominates.** Accounts present on one side only will swamp every other cause. Quantify and separate it before analysing anything else.
-- **Offsetting sibling sub-accounts** are posting errors, not missing money. Roll up to the parent to see the true residual.
-- Under **pandas ≥ 3**, `.astype(str)` preserves NaN — a blank cell will hand a float to a regex. Use `.fillna("").astype(str)`.
-- **Comma-decimal values must be quoted** when writing CSV, or `1.234,56` splits into two columns and every total silently changes.
-- A genuine **duplicate posting usually carries a different row id**, so id-like columns must be excluded from any duplicate signature or nothing is found.
-- **Canonicalise keys on both sides before comparing.** A key normaliser that guesses will silently merge unrelated accounts in an unfamiliar chart; prefer one that returns nothing over one that collides.
+- Sign convention is an **empirical question**. `convention.py` solves it and reports both counts. Never assume from column names. If the two score alike it is *not* established — investigate rather than picking one.
+- Try the **plain** key extraction first (key at the head of the description), before any client-specific pattern. The generic rule catches most ordinary exports.
+- **Duplicate-looking rows may be legitimate** repeated instalments. One discriminator is decisive: if the account ties exactly, a repeated row cannot be a spurious extra posting, so the rows are real. Where the account breaks, the ambiguity genuinely remains — ask, never de-duplicate automatically.
+- **Scope mismatch usually dominates.** Accounts on one side only will swamp every other cause. `equation.py` separates them as `CLOSING_ONLY`/`OPENING_ONLY`/`MOVEMENT_ONLY`; quantify them before analysing anything else.
+- **Offsetting sibling sub-accounts** are posting errors, not missing money. Compare `gap_gross` with `gap_gross_at_parent` to size it.
+- **Report net and gross separately.** Gross is how much activity is misposted; net is how much value is unexplained. A reconciliation can have a trivial net gap and a large gross one, and reporting only the net hides a real control failure.
 
 ## Working on this repository
 
@@ -129,7 +146,7 @@ deliberately strict:
 ```bash
 python tests/run_tests.py                 # read any diff before blessing
 python tests/run_tests.py --update        # only after deciding it is correct
-python statement-reconciliation/scripts/selftest.py
+python skills/recon-engine/scripts/selftest.py
 python tools/sync_adapters.py --check     # adapters must match SKILL.md
 ```
 

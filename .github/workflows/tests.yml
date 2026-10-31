@@ -30,6 +30,11 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Vendored arithmetic must match the canonical lib
+        # Divergent copies of executable code produce divergent numbers
+        # silently — the one failure this toolchain must not have.
+        run: python tools/sync_lib.py --check
+
       - name: Tool adapters must match the canonical SKILL.md
         # AGENTS.md, CLAUDE.md, the Copilot files and the Cursor rule are all
         # generated from statement-reconciliation/SKILL.md. Drifted guidance is
@@ -39,8 +44,8 @@ jobs:
       - name: Golden-file regression tests
         run: python tests/run_tests.py
 
-      - name: Skill self-test
-        run: python statement-reconciliation/scripts/selftest.py
+      - name: Engine self-test
+        run: python skills/recon-engine/scripts/selftest.py
 
       - name: Pytest suite
         run: pytest tests/ -v

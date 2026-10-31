@@ -45,7 +45,7 @@ def test_every_fixture_has_expected_output() -> None:
 
 def test_skill_selftest_passes() -> None:
     """The skill's own bundled self-test must pass independently."""
-    script = os.path.join(ROOT, "statement-reconciliation", "scripts",
+    script = os.path.join(ROOT, "skills", "recon-engine", "scripts",
                           "selftest.py")
     r = subprocess.run([sys.executable, "-I", script],
                        capture_output=True, text=True)
@@ -54,14 +54,14 @@ def test_skill_selftest_passes() -> None:
 
 def test_decision_schema_is_valid_json() -> None:
     import json
-    p = os.path.join(ROOT, "statement-reconciliation", "templates",
+    p = os.path.join(ROOT, "skills", "recon-decisions", "templates",
                      "decisions.schema.json")
     schema = json.load(open(p))
     # The closed vocabulary is the capability boundary; keep it in step with
     # the validator so an agent cannot be told one thing and checked against
     # another.
-    sys.path.insert(0, os.path.join(ROOT, "statement-reconciliation", "scripts"))
-    import decisions
+    sys.path.insert(0, os.path.join(ROOT, "skills", "recon-engine", "scripts"))
+    import lib as decisions  # the decision-log contract is canonical in lib
     assert set(schema["properties"]["kind"]["enum"]) == set(decisions.KINDS)
     assert set(schema["properties"]["actor"]["enum"]) == set(decisions.ACTORS)
     assert set(schema["properties"]["confidence"]["enum"]) == set(decisions.CONF)
@@ -70,7 +70,7 @@ def test_decision_schema_is_valid_json() -> None:
 def test_skill_frontmatter_is_well_formed() -> None:
     """SKILL.md must carry name + description, or the skill will not trigger."""
     import re
-    p = os.path.join(ROOT, "statement-reconciliation", "SKILL.md")
+    p = os.path.join(ROOT, "skills", "statement-reconciliation", "SKILL.md")
     text = open(p, encoding="utf-8").read()
     m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
     assert m, "SKILL.md has no YAML frontmatter"
@@ -81,14 +81,55 @@ def test_skill_frontmatter_is_well_formed() -> None:
     assert len(desc.group(1)) > 80, "description too short to trigger reliably"
 
 
-@pytest.mark.parametrize("ref", [
-    "confidence.md", "discovery.md", "intake.md",
-    "matching.md", "reporting.md", "taxonomy.md",
+@pytest.mark.parametrize("skill", [
+    "statement-reconciliation", "recon-discovery", "recon-engine",
+    "recon-item-matching", "recon-decisions", "recon-reporting",
 ])
-def test_referenced_docs_exist(ref: str) -> None:
-    """SKILL.md points at these by name; a dangling pointer breaks the workflow."""
-    p = os.path.join(ROOT, "statement-reconciliation", "references", ref)
-    assert os.path.isfile(p), f"missing reference: {ref}"
+def test_each_skill_is_well_formed(skill: str) -> None:
+    """Every skill needs frontmatter with a name and a triggering description."""
+    import re
+    p = os.path.join(ROOT, "skills", skill, "SKILL.md")
+    assert os.path.isfile(p), f"missing SKILL.md for {skill}"
+    text = open(p, encoding="utf-8").read()
+    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+    assert m, f"{skill}: no YAML frontmatter"
+    fm = m.group(1)
+    name = re.search(r"^name:\s*(\S+)", fm, re.M)
+    assert name and name.group(1) == skill, (
+        f"{skill}: frontmatter name must match the directory name")
+    desc = re.search(r"^description:\s*(.+)", fm, re.M | re.S)
+    assert desc and len(desc.group(1)) > 120, (
+        f"{skill}: description too short to trigger reliably")
+
+
+def test_vendored_library_is_in_sync() -> None:
+    """Divergent copies of executable code produce divergent numbers silently."""
+    script = os.path.join(ROOT, "tools", "sync_lib.py")
+    r = subprocess.run([sys.executable, "-I", script, "--check"],
+                       capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, (
+        f"vendored lib.py is stale; run `python tools/sync_lib.py`\n"
+        f"{r.stdout}{r.stderr}")
+
+
+def test_only_one_implementation_of_the_arithmetic() -> None:
+    """No skill may define its own parse_amount/canon beside the vendored lib.
+
+    The whole division of labour depends on this: the model picks the flow,
+    and exactly one place decides what every number is.
+    """
+    import glob
+    offenders = []
+    for f in glob.glob(os.path.join(ROOT, "skills", "*", "scripts", "**", "*.py"),
+                       recursive=True):
+        if os.path.basename(f) == "lib.py":
+            continue
+        src = open(f, encoding="utf-8").read()
+        for fn in ("def parse_amount", "def canon(", "def key_from_text"):
+            if fn in src:
+                offenders.append(f"{os.path.relpath(f, ROOT)} defines {fn!r}")
+    assert not offenders, (
+        "arithmetic must live only in lib.py: " + "; ".join(offenders))
 
 
 def test_binary_fixtures_are_valid() -> None:

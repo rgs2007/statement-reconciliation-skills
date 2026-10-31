@@ -44,7 +44,11 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SCRIPTS = os.path.join(ROOT, "statement-reconciliation", "scripts")
+SKILLS = os.path.join(ROOT, "skills")
+ENGINE = os.path.join(SKILLS, "recon-engine", "scripts")
+REPORTING = os.path.join(SKILLS, "recon-reporting", "scripts")
+MATCHING = os.path.join(SKILLS, "recon-item-matching", "scripts")
+DISCOVERY = os.path.join(SKILLS, "recon-discovery", "scripts")
 FIX = os.path.join(HERE, "fixtures")
 
 # The generation timestamp is the only genuinely volatile line in a report.
@@ -123,7 +127,7 @@ def produce_recon(fixture: str, work: str) -> dict[str, str]:
     shutil.copytree(src, work, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns("expected"))
     out = os.path.join(work, "run")
-    cmd = [os.path.join(SCRIPTS, "reconcile.py"),
+    cmd = [os.path.join(ENGINE, "reconcile.py"),
            os.path.join(work, "datamap.json"), "--out", out]
     dec = os.path.join(work, "decisions.jsonl")
     if os.path.exists(dec):
@@ -132,7 +136,7 @@ def produce_recon(fixture: str, work: str) -> dict[str, str]:
     if r.returncode != 0:
         raise RuntimeError(f"reconcile.py failed:\n{r.stdout}\n{r.stderr}")
 
-    rep = [os.path.join(SCRIPTS, "make_report.py"), out,
+    rep = [os.path.join(REPORTING, "make_report.py"), out,
            "--out", os.path.join(work, "report.md"),
            "--entity", "ACME INDUSTRIA LTDA", "--period", "2026-09"]
     if os.path.exists(dec):
@@ -156,7 +160,7 @@ def produce_items(fixture: str, work: str) -> dict[str, str]:
                     ignore=shutil.ignore_patterns("expected"))
     cfg = json.load(open(os.path.join(work, "match.json")))
     out = os.path.join(work, "run")
-    r = run([os.path.join(SCRIPTS, "match_items.py"),
+    r = run([os.path.join(MATCHING, "match_items.py"),
              os.path.join(work, "sources", "open_items.csv"),
              os.path.join(work, "sources", "statement.csv"),
              "--amount", cfg["amount"], "--ref", cfg["ref"],
@@ -178,7 +182,7 @@ def produce_profile(fixture: str, work: str) -> dict[str, str]:
                     ignore=shutil.ignore_patterns("expected"))
     sdir = os.path.join(work, "sources")
     files = sorted(os.path.join(sdir, f) for f in os.listdir(sdir))
-    r = run([os.path.join(SCRIPTS, "profile_files.py"), *files,
+    r = run([os.path.join(DISCOVERY, "profile_files.py"), *files,
              "--rows", "9", "--json"])
     if r.returncode != 0:
         raise RuntimeError(f"profile_files.py failed:\n{r.stdout}\n{r.stderr}")

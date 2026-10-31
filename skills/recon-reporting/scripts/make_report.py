@@ -139,8 +139,10 @@ def build(run_dir: str, dec_path: str | None, lang: str,
 
     entries, eff = [], {}
     if dec_path and os.path.exists(dec_path):
+        # lib is vendored into this skill, so reports can be generated
+        # without the recon-decisions skill installed.
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import decisions as dec
+        import lib as dec
         entries = dec.load(dec_path)
         eff = dec.resolve(entries)
 

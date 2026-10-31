@@ -38,114 +38,15 @@ import sys
 
 import pandas as pd
 
-GENERIC_KEY = re.compile(r"^\s*([A-Za-z0-9]{1,12})\s*[-/ ]\s*(\d{1,4})\b")
+# Isolated mode (python -I) does not prepend the script's own directory to
+# sys.path, so make the sibling import explicit rather than relying on it.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-
-# ---------------------------------------------------------------- parsing
-def parse_amount(v, style: str | None) -> float:
-    s = str(v).strip() if v is not None else ""
-    if s == "" or s.lower() == "nan":
-        return 0.0
-    neg = s.startswith("(") and s.endswith(")")
-    s = s.strip("()").replace(" ", "")
-    s = re.sub(r"[^\d.,\-]", "", s)
-    if style == "comma":
-        s = s.replace(".", "").replace(",", ".")
-    elif style == "dot":
-        s = s.replace(",", "")
-    else:  # auto: last separator wins as decimal
-        if "," in s and "." in s:
-            s = (s.replace(".", "").replace(",", ".") if s.rfind(",") > s.rfind(".")
-                 else s.replace(",", ""))
-        elif "," in s:
-            s = s.replace(",", ".") if len(s.split(",")[-1]) <= 2 else s.replace(",", "")
-    try:
-        x = float(s)
-    except ValueError:
-        return 0.0
-    return -x if neg else x
-
-
-def detect_style(series: pd.Series) -> str | None:
-    c = d = 0
-    for s in series.head(400).astype(str):
-        s = s.strip()
-        if re.fullmatch(r"-?[\d.]+,\d{1,2}", s):
-            c += 1
-        elif re.fullmatch(r"-?[\d,]+\.\d{1,2}", s):
-            d += 1
-    return None if c == d == 0 else ("comma" if c > d else "dot")
-
-
-def canon(key) -> str | None:
-    """Canonical key: strip leading zeros per segment, uppercase, '-' separator.
-
-    Fails loudly (returns None) rather than guessing - a normaliser that
-    guesses will silently merge unrelated accounts in an unfamiliar chart.
-    """
-    s = str(key or "").strip().upper()
-    if not s or s == "NAN":
-        return None
-    parts = re.split(r"[-/ .]+", s)
-    parts = [p for p in parts if p]
-    if not parts:
-        return None
-    out = []
-    for p in parts:
-        out.append(p.lstrip("0") or "0" if p.isdigit() else p)
-    return "-".join(out)
-
-
-def key_from_text(text: str, rules: list[dict]) -> tuple[str | None, str]:
-    t = str(text or "")
-    for r in rules:
-        pat = r.get("pattern")
-        m = GENERIC_KEY.match(t) if pat in (None, "") else re.search(pat, t)
-        if m:
-            g = [x for x in m.groups() if x]
-            return canon("-".join(g) if len(g) > 1 else (g[0] if g else m.group(0))), r.get("name", "R")
-    return None, "UNATTRIBUTED"
-
-
-# ---------------------------------------------------------------- loading
-def _sha256(path: str) -> str:
-    import hashlib
-    h = hashlib.sha256()
-    with open(path, "rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def load_side(spec: dict, base: str, style: str | None) -> pd.DataFrame:
-    path = spec["path"] if os.path.isabs(spec["path"]) else os.path.join(base, spec["path"])
-    df = pd.read_csv(path, dtype=str, keep_default_na=False)
-    df.attrs["source"] = {"path": spec["path"], "rows": len(df),
-                          "sha256": _sha256(path)}
-    st = style or detect_style(df[spec["amount"]])
-    df["_amt"] = df[spec["amount"]].map(lambda v: parse_amount(v, st))
-    if spec.get("key"):
-        df["_key"] = df[spec["key"]].map(canon)
-        df["_rule"] = "COLUMN"
-    else:
-        cols = spec.get("key_from") or []
-        rules = spec.get("rules") or [{"name": "S0", "pattern": None}]
-        # NB: pandas>=3 keeps NaN through .astype(str); fill first or regexes
-        # receive floats and raise TypeError.
-        texts = [df[c].fillna("").astype(str) if c in df.columns
-                 else pd.Series([""] * len(df)) for c in cols]
-        keys, rls = [], []
-        for vals in zip(*texts) if texts else []:
-            k = r = None
-            for v in vals:
-                k, r = key_from_text(v, rules)
-                if k:
-                    break
-            keys.append(k)
-            rls.append(r if k else "UNATTRIBUTED")
-        df["_key"] = keys or None
-        df["_rule"] = rls or "UNATTRIBUTED"
-    return df
+# All arithmetic comes from lib.py — the single implementation. This module
+# only orchestrates the standard roll-forward plan; it defines no figures of
+# its own. See steps/ for the individually-invocable version of this pipeline.
+from lib import (GENERIC_KEY, canon, detect_style, key_from_text,  # noqa: F401
+                 load_side, parse_amount, _sha256)
 
 
 # ---------------------------------------------------------------- engine
@@ -368,14 +269,13 @@ def main() -> None:
     base = os.path.dirname(os.path.abspath(a.datamap))
     eff = None
     if a.decisions:
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import decisions as dec
-        entries = dec.load(a.decisions)
-        problems = dec.validate(entries)
-        if problems:
-            raise SystemExit("decision log is invalid; fix before running:\n  "
-                             + "\n  ".join(problems))
-        eff = dec.resolve(entries)
+        # Resolution comes from lib (vendored), so the engine can replay a
+        # decision log whether or not the recon-decisions skill is installed.
+        from lib import resolve_file
+        try:
+            eff = resolve_file(a.decisions)
+        except ValueError as e:
+            raise SystemExit(f"{e}")
     res = run(dm, base, a.materiality, eff)
 
     os.makedirs(a.out, exist_ok=True)

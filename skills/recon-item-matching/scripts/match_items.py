@@ -32,24 +32,13 @@ from itertools import combinations
 
 import pandas as pd
 
+# Amount parsing is NOT reimplemented here: lib.py is the single
+# implementation, so a figure cannot differ between the engine and the
+# item matcher. lib.py is vendored by tools/sync_lib.py.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lib import parse_amount  # noqa: E402
 
-def parse_amount(v) -> float:
-    import re
-    s = str(v).strip() if v is not None else ""
-    if not s or s.lower() == "nan":
-        return 0.0
-    neg = s.startswith("(") and s.endswith(")")
-    s = re.sub(r"[^\d.,\-]", "", s.strip("()"))
-    if "," in s and "." in s:
-        s = (s.replace(".", "").replace(",", ".") if s.rfind(",") > s.rfind(".")
-             else s.replace(",", ""))
-    elif "," in s:
-        s = s.replace(",", ".") if len(s.split(",")[-1]) <= 2 else s.replace(",", "")
-    try:
-        x = float(s)
-    except ValueError:
-        return 0.0
-    return -x if neg else x
+
 
 
 def subset_match(target: float, pool: list[tuple[int, float]], tol: float,
@@ -103,8 +92,8 @@ def match_one(left: pd.DataFrame, right: pd.DataFrame, amount: str,
               max_subset: int, node_cap: int) -> dict:
     L = left.reset_index(drop=True).copy()
     R = right.reset_index(drop=True).copy()
-    L["_a"] = L[amount].map(parse_amount)
-    R["_a"] = R[amount].map(parse_amount)
+    L["_a"] = L[amount].map(lambda v: parse_amount(v, None))
+    R["_a"] = R[amount].map(lambda v: parse_amount(v, None))
     L["_m"] = None
     R["_m"] = None
     pairs = []

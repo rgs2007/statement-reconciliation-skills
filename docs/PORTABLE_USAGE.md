@@ -1,5 +1,5 @@
 <!-- GENERATED FILE — DO NOT EDIT.
-     Source: statement-reconciliation/SKILL.md
+     Source: skills/statement-reconciliation/SKILL.md
      Regenerate: python tools/sync_adapters.py
      CI fails if this file is stale. -->
 
@@ -29,8 +29,8 @@ Two routes, in order of preference.
 
 **1. Point it at the skill.** Most agentic tools can read a file on request:
 
-> Read `statement-reconciliation/SKILL.md` and follow it to reconcile these statements.
-> Open the matching file in `statement-reconciliation/references/` for whichever phase you
+> Read `skills/statement-reconciliation/SKILL.md` and follow it to reconcile these statements.
+> Open the matching file in `skills/statement-reconciliation/references/` for whichever phase you
 > are in.
 
 **2. Paste the operating brief.** For a tool with no file access, paste
@@ -46,12 +46,12 @@ arithmetic. The deterministic engine needs no model:
 ```bash
 pip install -r requirements.txt
 
-python statement-reconciliation/scripts/profile_files.py sources/*
-python statement-reconciliation/scripts/reconcile.py datamap.json --out runs/run-001 \
+python skills/statement-reconciliation/scripts/profile_files.py sources/*
+python skills/statement-reconciliation/scripts/reconcile.py datamap.json --out runs/run-001 \
        --decisions decisions.jsonl
-python statement-reconciliation/scripts/match_items.py left.csv right.csv \
+python skills/statement-reconciliation/scripts/match_items.py left.csv right.csv \
        --amount value --ref doc --out runs/run-001
-python statement-reconciliation/scripts/make_report.py runs/run-001 \
+python skills/statement-reconciliation/scripts/make_report.py runs/run-001 \
        --decisions decisions.jsonl --lang pt --out report.md
 ```
 
@@ -81,5 +81,5 @@ python tools/sync_adapters.py          # regenerate
 python tools/sync_adapters.py --check  # CI gate: fails if stale
 ```
 
-Edit `statement-reconciliation/SKILL.md`, never an adapter. Duplicated guidance drifts, and
+Edit `skills/statement-reconciliation/SKILL.md`, never an adapter. Duplicated guidance drifts, and
 drifted guidance is worse than none — it looks authoritative while being wrong.

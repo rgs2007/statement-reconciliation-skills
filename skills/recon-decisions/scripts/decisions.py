@@ -28,97 +28,12 @@ import json
 import os
 import sys
 
-KINDS = ["datamap", "ingest", "convention", "attribute", "exclude_scope",
-         "include_scope", "tolerance", "classify", "dedupe", "note"]
-ACTORS = ["user", "agent", "engine"]
-CONF = ["HIGH", "MEDIUM", "LOW"]
-REQUIRED = ["id", "ts", "actor", "kind", "statement", "reason", "confidence"]
-
-
-def load(path: str) -> list[dict]:
-    if not os.path.exists(path):
-        return []
-    out = []
-    for n, line in enumerate(open(path, encoding="utf-8"), 1):
-        line = line.strip()
-        if not line or line.startswith("//"):
-            continue
-        try:
-            out.append(json.loads(line))
-        except json.JSONDecodeError as e:
-            raise SystemExit(f"{path}:{n}: invalid JSON - {e}")
-    return out
-
-
-def validate(entries: list[dict]) -> list[str]:
-    """Return a list of problems; empty means valid."""
-    errs, seen = [], set()
-    for i, d in enumerate(entries, 1):
-        tag = d.get("id") or f"line {i}"
-        for f in REQUIRED:
-            if f not in d or d[f] in (None, "", {}):
-                errs.append(f"{tag}: missing required field '{f}'")
-        if d.get("kind") not in KINDS:
-            errs.append(f"{tag}: kind '{d.get('kind')}' is not in the closed "
-                        f"vocabulary {KINDS} - raise an open question instead")
-        if d.get("actor") not in ACTORS:
-            errs.append(f"{tag}: actor must be one of {ACTORS}")
-        if d.get("confidence") not in CONF:
-            errs.append(f"{tag}: confidence must be one of {CONF}")
-        if not str(d.get("reason", "")).strip():
-            errs.append(f"{tag}: empty reason - a decision without a reason "
-                        f"is not auditable")
-        if d.get("id") in seen:
-            errs.append(f"{tag}: duplicate id")
-        seen.add(d.get("id"))
-        sup = d.get("supersedes")
-        if sup and sup not in seen:
-            errs.append(f"{tag}: supersedes unknown id '{sup}'")
-    return errs
-
-
-def resolve(entries: list[dict]) -> dict:
-    """Fold the log into the effective decision set applied at run time."""
-    dead = {d["supersedes"] for d in entries if d.get("supersedes")}
-    live = [d for d in entries if d.get("id") not in dead]
-
-    eff: dict = {"exclude_keys": [], "include_keys": [], "attribute": {},
-                 "tolerance": None, "convention": None, "dedupe": [],
-                 "classify": {}, "counts": {}, "applied": []}
-    for d in live:
-        k, st = d["kind"], d.get("statement", {})
-        if k == "exclude_scope":
-            eff["exclude_keys"] += [str(x) for x in st.get("keys", [])]
-        elif k == "include_scope":
-            eff["include_keys"] += [str(x) for x in st.get("keys", [])]
-        elif k == "attribute":
-            # {"source_id": "...", "key": "..."} or {"map": {...}}
-            if st.get("map"):
-                eff["attribute"].update({str(a): str(b) for a, b in st["map"].items()})
-            elif st.get("source_id") and st.get("key"):
-                eff["attribute"][str(st["source_id"])] = str(st["key"])
-        elif k == "tolerance":
-            eff["tolerance"] = st.get("materiality", eff["tolerance"])
-        elif k == "convention":
-            eff["convention"] = st.get("movement_sign", eff["convention"])
-        elif k == "dedupe":
-            eff["dedupe"].append(st)
-        elif k == "classify":
-            for key in st.get("keys", []):
-                eff["classify"][str(key)] = st.get("category")
-        eff["applied"].append({"id": d.get("id"), "kind": k,
-                               "actor": d.get("actor"),
-                               "confidence": d.get("confidence")})
-    # dedupe exclusions, honour later re-inclusion
-    eff["exclude_keys"] = [k for k in dict.fromkeys(eff["exclude_keys"])
-                           if k not in set(eff["include_keys"])]
-    eff["counts"] = {"total": len(entries), "live": len(live),
-                     "superseded": len(dead),
-                     "by_actor": {a: sum(1 for d in live if d.get("actor") == a)
-                                  for a in ACTORS},
-                     "by_confidence": {c: sum(1 for d in live if d.get("confidence") == c)
-                                       for c in CONF}}
-    return eff
+# The read side (vocabulary, load, validate, resolve) is canonical in
+# lib.py so that every skill can replay a log independently. This module
+# owns AUTHORING: creating entries, rendering them and the CLI.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lib import (ACTORS, CONF, KINDS, REQUIRED, load,  # noqa: E402,F401
+                 resolve, resolve_file, validate)
 
 
 def next_id(entries: list[dict]) -> str:

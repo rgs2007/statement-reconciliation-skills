@@ -28,6 +28,24 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+
+def _append_decision(path: str, **kw) -> dict:
+    """Append one decision entry.
+
+    The engine skill does not depend on recon-decisions being installed, so
+    the self-test writes its own entry rather than importing that skill's
+    authoring helper. Validation still comes from lib, which is the single
+    implementation of the decision-log contract.
+    """
+    import datetime as _dt
+    import json as _json
+    entry = {"id": "d-0001",
+             "ts": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+             **kw}
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write(_json.dumps(entry, ensure_ascii=False) + "\n")
+    return entry
+
 # A small double-entry ledger: opening, movements, closing. Sums to zero.
 ACCOUNTS = [
     ("1000-01", "BANK OPERATING",        600193.40,   83098.68),
@@ -163,12 +181,12 @@ def main() -> None:
         # ---- decision replay
         dpath = f"{tmp}/decisions.jsonl"
         sys.path.insert(0, HERE)
-        import decisions as dec
-        dec.append(dpath, actor="user", kind="exclude_scope",
+        import lib
+        _append_decision(dpath, actor="user", kind="exclude_scope",
                    statement={"keys": ["1400-01"]},
                    reason="Tax receivable is reconciled separately by the tax team.",
                    confidence="HIGH", evidence={"gap": 8006.67})
-        if dec.validate(dec.load(dpath)):
+        if lib.validate(lib.load(dpath)):
             failures.append("decisions: freshly appended entry failed validation")
         r = subprocess.run([sys.executable, os.path.join(HERE, "reconcile.py"),
                             f"{tmp}/faulty/datamap.json", "--out", f"{tmp}/run_dec",
@@ -182,20 +200,37 @@ def main() -> None:
         if m3["gap_gross"] >= m2["gap_gross"]:
             failures.append("replay: excluding a broken account did not reduce the gap")
 
-        # ---- report
-        r = subprocess.run([sys.executable, os.path.join(HERE, "make_report.py"),
-                            f"{tmp}/run_faulty", "--decisions", dpath,
-                            "--out", f"{tmp}/report.md"],
-                           capture_output=True, text=True)
-        ok = os.path.exists(f"{tmp}/report.md") and r.returncode == 0
-        print(f"\nREPORT   generated: {ok}")
-        if not ok:
-            failures.append(f"report generation failed: {r.stderr[:200]}")
+        # ---- report (a DIFFERENT skill — only tested when it is present)
+        #
+        # Reporting lives in recon-reporting, which is separately installable.
+        # This self-test verifies the ENGINE, so a missing report generator is
+        # reported as not-exercised rather than as a failure; the repo-level
+        # golden suite covers the two together.
+        reporter = next(
+            (p for p in (
+                os.path.join(HERE, "make_report.py"),
+                os.path.join(HERE, "..", "..", "recon-reporting", "scripts",
+                             "make_report.py"))
+             if os.path.isfile(p)), None)
+        if not reporter:
+            print("\nREPORT   skipped — recon-reporting not installed alongside "
+                  "this skill (engine checks above are unaffected)")
         else:
-            txt = open(f"{tmp}/report.md").read()
-            for need in ("SUBACCOUNT_MISATTRIBUTION", "DECIMAL_SHIFT", "Glossary"):
-                if need not in txt:
-                    failures.append(f"report: missing expected section/code '{need}'")
+            r = subprocess.run([sys.executable, reporter,
+                                f"{tmp}/run_faulty", "--decisions", dpath,
+                                "--out", f"{tmp}/report.md"],
+                               capture_output=True, text=True)
+            ok = os.path.exists(f"{tmp}/report.md") and r.returncode == 0
+            print(f"\nREPORT   generated: {ok}")
+            if not ok:
+                failures.append(f"report generation failed: {r.stderr[:200]}")
+            else:
+                txt = open(f"{tmp}/report.md").read()
+                for need in ("SUBACCOUNT_MISATTRIBUTION", "DECIMAL_SHIFT",
+                             "Glossary"):
+                    if need not in txt:
+                        failures.append(
+                            f"report: missing expected section/code '{need}'")
 
     finally:
         if a.keep:
