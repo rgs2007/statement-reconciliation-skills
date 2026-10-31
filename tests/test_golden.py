@@ -242,3 +242,37 @@ def test_no_client_data_committed() -> None:
     assert not offenders, (
         "files matching *_raw.csv look like real ledger exports and must not "
         f"be committed: {offenders}")
+
+
+def test_self_contained_prompt_is_current() -> None:
+    """The paste-able prompt embeds the fixture, so it must not drift.
+
+    If the fixture changes and the prompt is not regenerated, it ships data
+    that no longer produces the figures it is graded against — a test harness
+    that lies, which is worse than no harness.
+    """
+    script = os.path.join(ROOT, "tools", "make_test_prompt.py")
+    r = subprocess.run([sys.executable, "-I", script, "--check"],
+                       capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, f"{r.stdout}{r.stderr}"
+
+
+def test_self_contained_prompt_data_matches_the_fixture_byte_for_byte() -> None:
+    """Extract the CSV blocks back out and compare with the real sources.
+
+    Checking the generator ran is not the same as checking its output is
+    usable: the blockquote formatting has to survive a copy-paste.
+    """
+    import re
+    p = os.path.join(ROOT, "docs", "test-prompt-selfcontained.md")
+    md = open(p, encoding="utf-8").read()
+    en = md[md.index("## The prompt (EN)"):md.index("## O prompt (PT)")]
+    blocks = re.findall(r"> \*\*(\w+)\.csv\*\*\n> ```csv\n(.*?)\n> ```", en, re.S)
+    assert len(blocks) == 3, f"expected 3 CSV blocks, found {len(blocks)}"
+    for name, body in blocks:
+        got = "\n".join(line[2:] if line.startswith("> ") else line.lstrip("> ")
+                        for line in body.splitlines())
+        src = os.path.join(ROOT, "tests", "fixtures", "02-faults", "sources",
+                           f"{name}.csv")
+        want = open(src, encoding="utf-8").read().strip()
+        assert got == want, f"{name}.csv in the prompt differs from the fixture"

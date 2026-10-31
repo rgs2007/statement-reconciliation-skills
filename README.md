@@ -197,6 +197,12 @@ python tests/run_tests.py       # check every fixture
 pytest tests/ -v               # same, with per-fixture reporting
 ```
 
+To test the skills in a fresh session, see
+[`docs/TESTING_THE_SKILL.md`](docs/TESTING_THE_SKILL.md) for prompts with
+known answers, or
+[`docs/test-prompt-selfcontained.md`](docs/test-prompt-selfcontained.md) for
+one that carries its data inline and needs no clone.
+
 Six fixtures cover: a clean ledger that must reconcile 100% with **zero**
 findings; five injected defects that must all surface; decision-log replay
 including a superseded decision; scope mismatch and page-break duplication;

@@ -17,20 +17,40 @@ absent, and the skill has to discover them. (It can: `detect_style` infers the
 convention from the data, and a run with no declared decimal style produces
 figures identical to one that was told.)
 
-## Setup
+## No clone? Start here instead
+
+**Every prompt on this page uses a path like
+`tests/fixtures/02-faults/sources/`, which only exists inside a clone of this
+repository.** Skills are normally installed to `~/.claude/skills/` and used
+from whatever project you are in — and an installed skill carries no test
+data, so these prompts fail with "file not found" anywhere else.
+
+If you are not in a clone, use
+[`test-prompt-selfcontained.md`](test-prompt-selfcontained.md). It carries its
+data inline and works in any session, including ones with no filesystem at
+all.
+
+## Setup for the path-based prompts
 
 ```bash
 git clone https://github.com/rgs2007/statement-reconciliation-skills
-cd statement-reconciliation-skills
+cd statement-reconciliation-skills            # the prompts below need this cwd
 pip install -r requirements.txt
 
 # all six: the orchestrator plus the five capability skills
 mkdir -p .claude/skills && cp -r skills/* .claude/skills/
 ```
 
-Start a new session in that directory. With Copilot, Cursor, Codex or anything
-else, the generated instruction files are already committed — nothing to
-install.
+Start the session **in that directory**, and confirm before testing:
+
+```bash
+ls tests/fixtures/02-faults/sources/          # must list 3 .csv files
+```
+
+If that errors, you are in the wrong directory — either `cd` into the clone or
+use the self-contained prompt. With Copilot, Cursor, Codex or anything else,
+the generated instruction files are already committed, so there is nothing to
+install, but the same working-directory requirement applies.
 
 ---
 
