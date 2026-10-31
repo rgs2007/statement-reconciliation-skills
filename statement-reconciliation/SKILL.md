@@ -7,6 +7,7 @@ description: Reconcile financial statements, ledgers, trial balances, bank state
 
 Find why two sets of figures disagree, prove each cause with evidence, and report it so an accountant can act on it and an auditor can follow it.
 
+<!-- shared:core-rules -->
 ## Non-negotiable rules
 
 **1. Mirror the user's language.** Detect the language of the user's message and reply in that language — every question, explanation and report narrative. Switch immediately if the user switches. Do **not** translate these, they stay stable for tooling and audit: category codes (`MISSING_MOVEMENTS`, `SCOPE_MISMATCH`, …), confidence labels (`HIGH`/`MEDIUM`/`LOW`), JSON keys, column names, account keys, file names. Everything a human reads is in their language; everything a machine reads stays in English. The report gets a short English glossary of the codes used.
@@ -18,7 +19,9 @@ Find why two sets of figures disagree, prove each cause with evidence, and repor
 **4. Deterministic first, model last.** Arithmetic, regex and set logic resolve the overwhelming majority of rows. Reserve judgement for the residue that survives them.
 
 **5. Read structure, not the corpus.** Profile files and work on samples, aggregates and residuals. Never load an entire large ledger into the conversation — it costs far more and produces worse answers than a targeted slice. See `references/discovery.md`.
+<!-- /shared:core-rules -->
 
+<!-- shared:workflow -->
 ## Workflow
 
 Work in order. Do not skip ahead to a verdict — an unexplained gap is almost always several causes stacked on top of each other, and the big one hides the rest.
@@ -32,6 +35,7 @@ Work in order. Do not skip ahead to a verdict — an unexplained gap is almost a
 | 4 · Diagnose | Classify every break by root cause | `references/taxonomy.md` |
 | 5 · Grade | Assign confidence and alternatives | `references/confidence.md` |
 | 6 · Report | Auditable output | `references/reporting.md` |
+<!-- /shared:workflow -->
 
 ### Phase 0 — Frame the reconciliation
 
@@ -61,6 +65,7 @@ reconciliation/
 
 Originals are never modified. Every transformation writes a new file into `working/` and appends a decision explaining it.
 
+<!-- shared:decision-log -->
 ## The decision log — how auditability actually works
 
 Every judgement call is appended to `decisions.jsonl` as one JSON object. Never rewrite or delete a line; supersede it with a new one. This file plus the source hashes is what makes a run reproducible and defensible.
@@ -72,6 +77,7 @@ If a proposed decision does not fit one of the allowed `kind` values, do not inv
 Re-running replays the log from the top, so the numbers always match the stated reasons: `reconcile.py --decisions decisions.jsonl`. Validate with `decisions.py validate` before every run — the engine refuses to run on an invalid log.
 
 Keys in decisions may be written in their natural form (`1400-01`); the engine canonicalises them.
+<!-- /shared:decision-log -->
 
 ## Interviewing the user
 
@@ -90,6 +96,7 @@ Bad: "Is your data clean?"
 
 Produce `report.md` covering: scope and control totals, the headline gap, findings ranked by amount, and open questions. Every finding carries evidence, rationale, confidence, alternative explanations and a remediation step. Never present a single explanation as settled when another fits the same evidence. Format and section order: `references/reporting.md`.
 
+<!-- shared:scripts -->
 ## Scripts
 
 | Script | Does |
@@ -117,17 +124,20 @@ python scripts/make_report.py runs/run-001 --decisions decisions.jsonl \
 Run `selftest.py` after changing any script. All are dependency-light (pandas; openpyxl and pdfplumber only for those formats). Run them; do not reimplement their logic inline.
 
 **`make_report.py` leaves placeholders** for rationale, alternatives considered and remediation. The script guarantees the figures and the audit trail; writing the reasoning from the evidence is the agent's job, in the user's language. Never deliver a report with placeholders still in it.
+<!-- /shared:scripts -->
 
+<!-- shared:traps -->
 ## Known traps
 
 These cost real time when they are missed. Details in the references.
 
 - Sign convention is an **empirical question**. Test `closing = opening + movements` and `closing = opening − movements` and adopt whichever reconciles more accounts. Never assume from column names.
 - Try the **plain** key extraction first (key at the head of the description), before any client-specific pattern. A generic fallback catches most ordinary exports.
-- **Duplicate-looking rows may be legitimate** repeated instalments. Blanket de-duplication can make a reconciliation worse. Always ask.
+- **Duplicate-looking rows may be legitimate** repeated instalments. Blanket de-duplication can make a reconciliation worse. Always ask. One discriminator is decisive: if the account ties exactly, a repeated row cannot be a spurious extra posting, so the rows are real. Where the account breaks, the ambiguity genuinely remains.
 - **Scope mismatch usually dominates.** Accounts present on one side only will swamp every other cause. Quantify and separate it before analysing anything else.
 - **Offsetting sibling sub-accounts** are posting errors, not missing money. Roll up to the parent to see the true residual.
 - Under **pandas ≥ 3**, `.astype(str)` preserves NaN — a blank cell will hand a float to a regex. Use `.fillna("").astype(str)`.
 - **Comma-decimal values must be quoted** when writing CSV, or `1.234,56` splits into two columns and every total silently changes.
 - A genuine **duplicate posting usually carries a different row id**, so id-like columns must be excluded from any duplicate signature or nothing is found.
 - **Canonicalise keys on both sides before comparing.** A key normaliser that guesses will silently merge unrelated accounts in an unfamiliar chart; prefer one that returns nothing over one that collides.
+<!-- /shared:traps -->

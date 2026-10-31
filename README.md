@@ -16,27 +16,58 @@ Built from a real reconciliation of a 111k-row sub-ledger, then validated agains
 
 ## Install
 
-### Claude Code (VS Code, JetBrains or terminal)
+### Any tool — nothing to configure
 
-Project-scoped — shared with anyone who clones the repo:
+The repository ships generated instruction files for every major assistant, so
+a plain checkout works immediately:
+
+| Tool | Reads |
+|---|---|
+| Claude Code | `CLAUDE.md`, or install as a skill (below) |
+| GitHub Copilot | `.github/copilot-instructions.md` + `.github/instructions/` |
+| Codex CLI, Cursor, Windsurf, Gemini CLI/Jules, Amp, Devin, Aider, OpenCode, goose, Junie, Zed, Warp, Factory | `AGENTS.md` |
+| Cursor (native rules) | `.cursor/rules/statement-reconciliation.mdc` |
+
+Claude Code is the one tool that does not read `AGENTS.md`, which is why
+`CLAUDE.md` sits alongside it. Both are generated from the same source, so they
+cannot disagree.
+
+For anything else — or a tool with no file access — see
+[`docs/PORTABLE_USAGE.md`](docs/PORTABLE_USAGE.md). The short version: point it
+at `statement-reconciliation/SKILL.md`, or paste `AGENTS.md` in as a system
+prompt. It is self-contained.
+
+### Claude Code as a skill (best experience)
+
+Installed as a skill it triggers on description alone — no instruction file,
+and the references load per phase so simple jobs stay cheap:
 
 ```bash
 mkdir -p .claude/skills
-cp -r statement-reconciliation .claude/skills/
+cp -r statement-reconciliation .claude/skills/        # this project
+
+mkdir -p ~/.claude/skills
+cp -r statement-reconciliation ~/.claude/skills/      # every project
 ```
 
-Personal, available in every project:
+Then ask something like *"these two statements don't tie out, can you work out
+why"*. Verify it loaded with `/skills`.
+
+### No AI at all
+
+The deterministic engine needs no model, which makes it usable from CI or a
+scheduled job:
 
 ```bash
-mkdir -p ~/.claude/skills
-cp -r statement-reconciliation ~/.claude/skills/
+python statement-reconciliation/scripts/reconcile.py datamap.json \
+       --out runs/run-001 --decisions decisions.jsonl
 ```
 
-Restart the session, then ask something like *"these two statements don't tie out, can you help me work out why"* — the skill triggers on the description, no command needed. Verify it loaded with `/skills` if your client supports it.
-
-### Other agent tools
-
-`SKILL.md` is plain Markdown with YAML frontmatter, and the references are plain Markdown. Any assistant that can read project instructions can use this: point it at `statement-reconciliation/SKILL.md`, or paste that file in as system instructions and keep the folder alongside. The two scripts are ordinary Python and run standalone.
+What an assistant adds is what a script cannot do: interviewing the user about
+what only they can see, choosing between explanations that fit the same
+evidence, and writing the rationale. The figures, the detection and the audit
+trail come from the scripts either way — so the output is reproducible whichever
+assistant was driving.
 
 ## Requirements
 
@@ -69,6 +100,14 @@ statement-reconciliation/
     selftest.py                 control + fault-injection test suite
   templates/
     decisions.schema.json       append-only decision log, closed vocabulary
+
+AGENTS.md                       generated — cross-tool standard
+CLAUDE.md                       generated — Claude Code
+.github/copilot-instructions.md generated — Copilot, repo-wide
+.github/instructions/           generated — Copilot, path-scoped (applyTo)
+.cursor/rules/                  generated — Cursor native rules
+docs/PORTABLE_USAGE.md          generated — using it with any other tool
+tools/sync_adapters.py          regenerates all of the above from SKILL.md
 
 tests/                          golden-file regression suite — see tests/README.md
   run_tests.py                  regenerate and compare against expected output
@@ -135,6 +174,13 @@ python scripts/selftest.py
 **Duplicates are never removed automatically.** Repeated rows may be legitimate instalments or may be page-break artifacts of a printed source, and the two are indistinguishable from the data alone. The skill quantifies the amount, marks it LOW confidence, keeps it out of the "explained" total and asks.
 
 **Net and gross are always reported separately.** They answer different questions — how much money is unexplained versus how much activity is misposted. A reconciliation can have a trivial net gap and a large gross one, and reporting only the net hides real control failures.
+
+**One source of truth for guidance.** Every instruction file in the repo is
+generated from `statement-reconciliation/SKILL.md` by
+`tools/sync_adapters.py`, and CI fails if any drifts. Six hand-maintained
+copies of the same rules would disagree within a week, and drifted guidance is
+worse than none — it reads as authoritative while being wrong. Edit `SKILL.md`,
+then run the sync.
 
 **Parent-level rollup separates misposting from missing money.** Offsetting sibling sub-accounts collapse to zero at the parent. The difference between leaf-level and parent-level totals is one of the most useful numbers in the report.
 

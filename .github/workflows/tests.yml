@@ -30,6 +30,12 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Tool adapters must match the canonical SKILL.md
+        # AGENTS.md, CLAUDE.md, the Copilot files and the Cursor rule are all
+        # generated from statement-reconciliation/SKILL.md. Drifted guidance is
+        # worse than none — it looks authoritative while being wrong.
+        run: python tools/sync_adapters.py --check
+
       - name: Golden-file regression tests
         run: python tests/run_tests.py
 
