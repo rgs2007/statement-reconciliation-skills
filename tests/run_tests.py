@@ -184,10 +184,21 @@ def produce_profile(fixture: str, work: str) -> dict[str, str]:
         raise RuntimeError(f"profile_files.py failed:\n{r.stdout}\n{r.stderr}")
     data = json.loads(r.stdout)
     # Absolute paths and byte sizes vary by checkout; keep the basename, drop
-    # size. The sha256 stays - it is the point of the provenance check.
+    # size. For TEXT sources the sha256 stays - it is the provenance check.
+    #
+    # For a generated .xlsx it cannot: openpyxl writes its own version into
+    # docProps/app.xml ("Openpyxl 3.1.5"), so the bytes - and the hash - differ
+    # on any machine with a different openpyxl. Pinning it would make the suite
+    # fail on library upgrades rather than on real regressions. The fixture's
+    # actual contract - sheet names, dimensions, the header-row guess, and that
+    # values stay masked - is still compared in full.
+    binary_ext = (".xlsx", ".xlsm", ".pdf")
     for d in data:
-        d["path"] = os.path.basename(d.get("path", ""))
+        name = os.path.basename(d.get("path", ""))
+        d["path"] = name
         d.pop("size_bytes", None)
+        if name.endswith(binary_ext):
+            d["sha256"] = "<library-dependent, not compared>"
     return {"profile.json": json.dumps(data, indent=2, sort_keys=True) + "\n"}
 
 

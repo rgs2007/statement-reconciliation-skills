@@ -39,14 +39,21 @@ jobs:
       - name: Pytest suite
         run: pytest tests/ -v
 
-      - name: Fixtures must be reproducible from the generator
+      - name: Text fixtures must be reproducible from the generator
         # Regenerating the sources must not change them. If this fails, either
         # a fixture was hand-edited or the generator drifted — both hide what
         # the committed test data actually is.
+        #
+        # Generated .xlsx files are excluded on purpose: openpyxl stamps its
+        # own version into docProps/app.xml, so the bytes differ on any machine
+        # with a different openpyxl. Asserting byte-identity there would fail
+        # on library upgrades rather than on real drift. Their *content* is
+        # still checked — the golden profile compares structure, and a separate
+        # test asserts the committed workbook actually opens.
         run: |
           python tests/make_fixtures.py
-          if ! git diff --exit-code -- tests/fixtures; then
-            echo "::error::Regenerating fixtures changed the committed sources."
+          if ! git diff --exit-code -- tests/fixtures ':(exclude)*.xlsx' ':(exclude)*.xlsm'; then
+            echo "::error::Regenerating fixtures changed the committed text sources."
             echo "Run 'python tests/make_fixtures.py' locally and commit, or fix the generator."
             exit 1
           fi

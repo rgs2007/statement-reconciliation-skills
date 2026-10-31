@@ -188,7 +188,7 @@
     ],
     "format": "excel",
     "path": "balancete_messy.xlsx",
-    "sha256": "45418e79889e687e47ba21e7df6c59829fc7944b013a73c7d81dfa93bae3052a",
+    "sha256": "<library-dependent, not compared>",
     "sheets": [
       "Saldos",
       "Notas"
