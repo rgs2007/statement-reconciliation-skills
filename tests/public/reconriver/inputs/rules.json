@@ -1,0 +1,15 @@
+{
+  "source": "heybadrinath/reconriver-synthetic-reconciliation (dataset README and pack READMEs)",
+  "fee_policy": "fee = 2.90% of a positive gross_amount + 0.30, rounded HALF_UP to 2 decimals",
+  "net_amount_rule": "net_amount = gross_amount - fee_amount (valid processor rows)",
+  "settlement_window_days": 3,
+  "settlement_window_rule": "bank settlement expected within 3 calendar days after the latest processor event in a settlement batch",
+  "currencies": ["USD", "EUR", "GBP"],
+  "currency_rule": "no FX conversion; a currency difference between sides is an exception",
+  "match_levels": {
+    "ORDER": "internal_transactions <-> processor_transactions on merchant_order_id",
+    "SETTLEMENT": "processor_transactions (grouped by settlement_batch_id, net) <-> bank_settlements on settlement_batch_id"
+  },
+  "failure_recovery_restart_contract": "optional batch-job test: persist chunks of 500 rows, fail in a controlled way after 2,500 processed rows (5 committed chunks), restart from the last committed chunk without duplicate results",
+  "duplicate_file_test": "mixed-exceptions/internal_transactions_duplicate.csv is a byte-identical copy of internal_transactions.csv; a robust importer should detect it"
+}

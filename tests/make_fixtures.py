@@ -25,6 +25,10 @@ and a private repo can be shared later. These fixtures instead reproduce the
   - accounts present on one side only (scope mismatch)
   - consecutive duplicate rows (page-break artifact vs real instalments)
   - a transaction whose account cannot be derived at all
+
+Fixtures 07-09 are the exception: they are reshaped from third-party public
+data committed under tests/public/ (see its README), so their defects were not
+planted here and their contracts come from an independent answer key.
 """
 from __future__ import annotations
 
@@ -359,6 +363,118 @@ def build_profile(name: str) -> None:
           ["", "LINHA SEM VALOR", "", "a4"]])
 
 
+# --------------------------------------------------------------------------
+# Fixtures derived from third-party public data (tests/public/). Unlike the
+# synthetic fixtures above, the defects here were not planted by us: they are
+# whatever the published data contains, and each fixture's contract is taken
+# from an answer key computed independently of the skill
+# (tests/public/mindweave-us/expected/). The builders only reshape the
+# published files into the engine's input format - no values are altered.
+PUBLIC = os.path.join(HERE, "public")
+MINDWEAVE = os.path.join(PUBLIC, "mindweave-us", "inputs")
+
+
+def _read(path: str) -> list[dict]:
+    with open(path, newline="", encoding="utf-8") as fh:
+        return list(csv.DictReader(fh))
+
+
+def _money(x) -> str:
+    from decimal import Decimal
+    return format(Decimal(x).quantize(Decimal("0.01")), "f")
+
+
+def build_public_gl_month(name: str, month: str) -> None:
+    """One month of the Mindweave GL as opening / movements / closing.
+
+    opening   = trial balance at the prior month end (debit - credit)
+    closing   = trial balance at this month end (debit - credit)
+    movements = every journal line dated in the month (debit - credit)
+    """
+    from decimal import Decimal
+    d = os.path.join(FIX, name)
+    shutil.rmtree(os.path.join(d, "sources"), ignore_errors=True)
+    gl = os.path.join(MINDWEAVE, "gl")
+    coa = {r["id"]: r for r in _read(os.path.join(gl, "chart_of_accounts.csv"))}
+    je = {r["id"]: r for r in _read(os.path.join(gl, "journal_entries.csv"))}
+    tb = _read(os.path.join(gl, "trial_balances.csv"))
+    periods = sorted({r["period_end"] for r in tb})
+    end = next(p for p in periods if p.startswith(month))
+    prev = periods[periods.index(end) - 1]
+
+    def balances(period: str) -> list[list]:
+        return [[r["account_code"], r["account_name"],
+                 _money(Decimal(r["debit_balance"]) - Decimal(r["credit_balance"]))]
+                for r in tb if r["period_end"] == period]
+
+    mv = []
+    for ln in _read(os.path.join(gl, "journal_entry_lines.csv")):
+        e = je[ln["journal_entry_id"]]
+        if e["entry_date"][:7] != month:
+            continue
+        mv.append([ln["id"], e["entry_number"], e["entry_date"],
+                   coa[ln["account_id"]]["code"], ln["description"],
+                   e["source_module"],
+                   _money(Decimal(ln["debit"]) - Decimal(ln["credit"]))])
+    mv.sort(key=lambda r: (r[2], int(r[1]), r[0]))
+
+    head = ["account", "account_name", "balance"]
+    dump(f"{d}/sources/opening.csv", head, balances(prev))
+    dump(f"{d}/sources/closing.csv", head, balances(end))
+    dump(f"{d}/sources/movements.csv",
+         ["line_id", "entry_number", "entry_date", "account", "description",
+          "source_module", "amount"], mv)
+    json.dump({"opening": {"path": "sources/opening.csv", "key": "account",
+                           "amount": "balance"},
+               "closing": {"path": "sources/closing.csv", "key": "account",
+                           "amount": "balance"},
+               "movements": {"path": "sources/movements.csv", "key": "account",
+                             "amount": "amount"},
+               "decimal_style": "dot"},
+              open(f"{d}/datamap.json", "w"), indent=2)
+    json.dump({"entity": "Summit Outdoor Gear LLC (synthetic, Mindweave)",
+               "period": month}, open(f"{d}/report.json", "w"), indent=2)
+
+
+def build_public_bank_vs_gl(name: str) -> None:
+    """Operating bank account vs its GL account (1-1000), 24 months.
+
+    Left = GL lines on the bank account, right = bank statement lines; both
+    carry the originating business event's id, which is the reference.
+    """
+    from decimal import Decimal
+    d = os.path.join(FIX, name)
+    shutil.rmtree(os.path.join(d, "sources"), ignore_errors=True)
+    gl, bank = os.path.join(MINDWEAVE, "gl"), os.path.join(MINDWEAVE, "bank")
+    coa = {r["id"]: r for r in _read(os.path.join(gl, "chart_of_accounts.csv"))}
+    je = {r["id"]: r for r in _read(os.path.join(gl, "journal_entries.csv"))}
+    op = next(a for a in _read(os.path.join(bank, "bank_accounts.csv"))
+              if a["account_type"] == "operating")
+    gl_id = next(i for i, a in coa.items() if a["code"] == op["gl_account_code"])
+
+    left = []
+    for ln in _read(os.path.join(gl, "journal_entry_lines.csv")):
+        if ln["account_id"] != gl_id:
+            continue
+        e = je[ln["journal_entry_id"]]
+        left.append([e["source_id"],
+                     _money(Decimal(ln["debit"]) - Decimal(ln["credit"])),
+                     e["entry_date"], ln["id"], ln["description"]])
+    right = [[t["source_id"], _money(t["amount"]), t["transaction_date"],
+              t["id"], t["description"]]
+             for t in _read(os.path.join(bank, "bank_transactions.csv"))
+             if t["bank_account_id"] == op["id"]]
+    left.sort(key=lambda r: (r[2], r[3]))
+    right.sort(key=lambda r: (r[2], r[3]))
+
+    head = ["ref", "amount", "date", "line_id", "description"]
+    dump(f"{d}/sources/open_items.csv", head, left)
+    dump(f"{d}/sources/statement.csv", head, right)
+    json.dump({"amount": "amount", "ref": "ref", "date": "date",
+               "tolerance": 0.01, "max_subset": 4, "node_cap": 200000},
+              open(f"{d}/match.json", "w"), indent=2)
+
+
 BUILDERS = {
     "01-clean":          lambda n: build(n),
     "02-faults":         lambda n: build(n, faults=True),
@@ -367,6 +483,9 @@ BUILDERS = {
                                           pagebreak=True),
     "05-item-matching":  build_items,
     "06-profile":        build_profile,
+    "07-public-gl-clean":     lambda n: build_public_gl_month(n, "2024-06"),
+    "08-public-gl-tb-offset": lambda n: build_public_gl_month(n, "2025-10"),
+    "09-public-bank-vs-gl":   build_public_bank_vs_gl,
 }
 
 

@@ -132,9 +132,15 @@ def produce_recon(fixture: str, work: str) -> dict[str, str]:
     if r.returncode != 0:
         raise RuntimeError(f"reconcile.py failed:\n{r.stdout}\n{r.stderr}")
 
+    # Synthetic fixtures share one fictional entity; a fixture built from
+    # public data names its own in report.json so the report header is true.
+    hdr = {"entity": "ACME INDUSTRIA LTDA", "period": "2026-09"}
+    rj = os.path.join(work, "report.json")
+    if os.path.exists(rj):
+        hdr.update(json.load(open(rj, encoding="utf-8")))
     rep = [os.path.join(SCRIPTS, "make_report.py"), out,
            "--out", os.path.join(work, "report.md"),
-           "--entity", "ACME INDUSTRIA LTDA", "--period", "2026-09"]
+           "--entity", hdr["entity"], "--period", hdr["period"]]
     if os.path.exists(dec):
         rep += ["--decisions", dec]
     r2 = run(rep)
@@ -205,6 +211,7 @@ def produce_profile(fixture: str, work: str) -> dict[str, str]:
 PRODUCERS = {
     "05-item-matching": produce_items,
     "06-profile": produce_profile,
+    "09-public-bank-vs-gl": produce_items,
 }
 
 # Fixtures whose point is a specific behaviour; asserted beyond the goldens so
@@ -238,6 +245,38 @@ CONTRACTS: dict[str, list[tuple[str, str]]] = {
          "page-break signature surfaced, never auto-removed"),
         ("status('2432-1') == 'CLOSING_ONLY'", "scope mismatch isolated"),
     ],
+    # 07-09 come from public data. Their contracts restate the independent
+    # answer key in tests/public/mindweave-us/expected/, so they test the
+    # skill against truth it did not produce.
+    "07-public-gl-clean": [
+        ("metrics.reconciled == metrics.keys_total",
+         "every account in a clean published month ties"),
+        ("metrics.gap_gross == 0", "no gap where the answer key has none"),
+        ("metrics.movements_unattributed == 0", "every journal line attributable"),
+        ("metrics.sign_convention == 'closing = opening + movements'",
+         "debit-positive convention solved from the data"),
+    ],
+    "08-public-gl-tb-offset": [
+        ("near(gap('1-2010'), -77.06)",
+         "trial balance disagrees with the journal on accumulated depreciation"),
+        ("near(gap('6-2800'), 77.06)",
+         "and on depreciation expense, by the opposite amount"),
+        ("metrics.reconciled == metrics.keys_total - 2",
+         "only those two accounts break"),
+        ("near(metrics.gap_net, 0)", "the two gaps offset exactly"),
+    ],
+    "09-public-bank-vs-gl": [
+        ("items['matched_by_pass'] == {'EXACT': 3208}",
+         "every bank line with a GL counterpart pairs on reference + amount, "
+         "and nothing else is force-matched"),
+        ("items['unmatched_right']['rows'] == 24",
+         "24 monthly bank fees were never booked in the GL"),
+        ("near(items['unmatched_right']['net'], -445.85)", "fees total -445.85"),
+        ("items['unmatched_left']['rows'] == 1",
+         "one GL line has no bank counterpart"),
+        ("near(items['unmatched_left']['net'], 200000)",
+         "it is the 200,000.00 opening equity contribution"),
+    ],
 }
 
 
@@ -249,7 +288,9 @@ def eval_contracts(fixture: str, got: dict[str, str]) -> list[str]:
     import csv as _csv
     import io
 
-    metrics = json.loads(got["metrics.json"])
+    metrics = json.loads(got.get("metrics.json", "{}"))
+    # item-matching fixtures expose the single-pass summary as `items`
+    items = json.loads(got.get("item_match.json", "{}")).get("(all)", {})
     rows = list(_csv.DictReader(io.StringIO(got.get("breaks.csv", ""))))
     by_key = {r["key"]: r for r in rows}
 
@@ -265,6 +306,9 @@ def eval_contracts(fixture: str, got: dict[str, str]) -> list[str]:
         "status": lambda k: (by_key.get(k, {}).get("status") or ""),
         "broke": lambda k: k in by_key,
         "gap": lambda k: float(by_key.get(k, {}).get("gap") or 0.0),
+        "items": items,
+        # money equality to the cent, immune to float noise
+        "near": lambda a, b: abs(float(a) - float(b)) <= 0.005,
     }
     fails = []
     for expr, why in rules:
@@ -288,7 +332,8 @@ def check(fixture: str, update: bool, verbose: bool) -> tuple[bool, list[str]]:
         return False, [f"  ERROR running the skill: {e}"]
     shutil.rmtree(work, ignore_errors=True)
 
-    problems = eval_contracts(fixture, got) if "metrics.json" in got else []
+    problems = (eval_contracts(fixture, got)
+                if "metrics.json" in got or "item_match.json" in got else [])
 
     if update:
         os.makedirs(exp_dir, exist_ok=True)

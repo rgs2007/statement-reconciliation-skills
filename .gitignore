@@ -30,3 +30,13 @@ venv/
 .DS_Store
 .idea/
 .vscode/
+
+# Public test data fetched on demand by tests/public/fetch_public.py, never
+# committed: the large ReconRiver packs (size) and the cuadrador set (its
+# source states no license, so it is not redistributed from this repository).
+/tests/public/reconriver/inputs/month-end-close/
+/tests/public/reconriver/inputs/failure-recovery/
+/tests/public/reconriver/expected/month-end-close/
+/tests/public/reconriver/expected/failure-recovery/
+/tests/public/cuadrador/inputs/
+/tests/public/cuadrador/expected/sample_data/

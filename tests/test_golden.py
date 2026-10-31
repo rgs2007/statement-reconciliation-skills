@@ -190,6 +190,18 @@ def test_referenced_paths_in_adapters_exist() -> None:
     assert not broken, "adapters point at paths that do not exist: " + str(broken)
 
 
+def test_public_data_matches_provenance() -> None:
+    """Committed third-party data must be byte-identical to what was pinned.
+
+    tests/public/ answer keys describe those exact bytes; a hand-edited input
+    would silently stop matching its key. Verification only - no network.
+    """
+    script = os.path.join(HERE, "public", "fetch_public.py")
+    r = subprocess.run([sys.executable, "-I", script, "--verify"],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, f"public test data drifted:\n{r.stdout}\n{r.stderr}"
+
+
 def test_no_client_data_committed() -> None:
     """Guard the privacy rule: real ledger exports must never enter history."""
     offenders = []

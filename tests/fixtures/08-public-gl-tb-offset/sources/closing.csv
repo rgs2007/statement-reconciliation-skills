@@ -1,0 +1,17 @@
+account,account_name,balance
+1-1000,Bank Account - Operating,1716189.51
+1-1100,Accounts Receivable,343463.74
+1-1400,Sales Tax Receivable,117533.26
+1-2010,Less Accumulated Depreciation - Office Equipment,-4921.35
+1-2110,Less Accumulated Depreciation - Furniture & Fixtures,-5568.78
+1-2210,Less Accumulated Depreciation - Vehicles,-4875.99
+2-1000,Accounts Payable,-27604.58
+2-1100,Sales Tax Payable,-305509.13
+2-1200,Federal Income Tax Withholding Payable,-194546.84
+2-1300,FICA Payable (Social Security & Medicare),-42272.52
+3-1000,Owner's Equity / Common Stock,-200000.00
+4-1000,Sales Revenue,-4073451.35
+5-1000,Cost of Goods Sold,1567117.55
+6-1000,Salaries & Wages,1056807.84
+6-1100,Employer FICA Expense,42272.52
+6-2800,Depreciation Expense,15366.12

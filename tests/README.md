@@ -36,6 +36,13 @@ goldens say.
 | `04-scope-pagebreak` | Scope mismatch is isolated; consecutive duplicate rows are *surfaced and never auto-removed* |
 | `05-item-matching` | Item matching across all four passes — exact, amount-only, bounded subset-sum (one lump payment settling three invoices), and timing |
 | `06-profile` | The profiler reports structure with values **masked**, and guesses the header row in a messy workbook |
+| `07-public-gl-clean` | On published third-party data (Mindweave GL, 2024-06), every account ties with zero gap |
+| `08-public-gl-tb-offset` | On the same GL for 2025-10, exactly the two accounts the answer key flags break, by -77.06 and +77.06 |
+| `09-public-bank-vs-gl` | Bank vs GL account 1-1000 over 24 months: 3,208 exact pairs, 24 unbooked bank fees, the opening equity line GL-only, no forced matches |
+
+Fixtures 07-09 are reshaped from third-party data in [`public/`](public/README.md).
+Their defects were not planted by us, and their contracts restate an answer key
+computed independently of the skill.
 
 Each reconciliation fixture contains:
 
@@ -44,6 +51,7 @@ NN-name/
   sources/           opening.csv, closing.csv, movements.csv  (committed inputs)
   datamap.json       how the engine reads them
   decisions.jsonl    only where the fixture exercises replay
+  report.json        optional: entity and period for the report header
   expected/          the blessed output — metrics.json, breaks.csv,
                      residual.csv, report.md
 ```
@@ -54,6 +62,19 @@ a finished agent report should meet. The generated `report.md` deliberately
 leaves rationale, alternatives and remediation as placeholders, because the
 scripts guarantee the figures and the audit trail while the reasoning is the
 agent's job.
+
+## Public test data
+
+[`public/`](public/README.md) holds third-party synthetic datasets with answer
+keys the skill did not produce, kept as `inputs/` and `expected/` per dataset.
+Every file is pinned by sha256 in `public/PROVENANCE.json`, and a pytest check
+fails if a committed one changes. Large packs and the one set without a license
+are fetched on demand:
+
+```bash
+python tests/public/fetch_public.py --verify   # integrity only, no network
+python tests/public/fetch_public.py            # fetch what is not committed
+```
 
 ## Why the data is synthetic
 

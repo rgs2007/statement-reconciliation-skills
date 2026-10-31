@@ -1,0 +1,8 @@
+{
+  "amount": "amount",
+  "ref": "ref",
+  "date": "date",
+  "tolerance": 0.01,
+  "max_subset": 4,
+  "node_cap": 200000
+}
