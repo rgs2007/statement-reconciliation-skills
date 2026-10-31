@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reconciliation decision log entry",
+  "description": "One JSON object per line in decisions.jsonl. Append-only: never edit or delete a line. To change a decision, append a new one with supersedes set to the old id. Replaying the file in order reproduces the reconciliation exactly.",
+  "type": "object",
+  "required": ["id", "ts", "actor", "kind", "statement", "reason", "confidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable unique id, e.g. d-0001."
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp."
+    },
+    "actor": {
+      "enum": ["user", "agent", "engine"],
+      "description": "Who made the call. 'user' is a human judgement; 'agent' is model-proposed; 'engine' is computed deterministically."
+    },
+    "kind": {
+      "enum": [
+        "datamap",
+        "ingest",
+        "convention",
+        "attribute",
+        "exclude_scope",
+        "include_scope",
+        "tolerance",
+        "classify",
+        "dedupe",
+        "note"
+      ],
+      "description": "Closed vocabulary. If a needed decision does not fit one of these, do not invent a new kind - raise it as an open question instead."
+    },
+    "statement": {
+      "type": "object",
+      "description": "The decision content. Shape depends on kind; keys stay in English.",
+      "additionalProperties": true
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why this decision was made, in the user's language. Mandatory - a decision without a reason is not auditable."
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Concrete figures supporting the decision: amounts, row counts, keys, file hashes, rule coverage.",
+      "additionalProperties": true
+    },
+    "confidence": {
+      "enum": ["HIGH", "MEDIUM", "LOW"],
+      "description": "See references/confidence.md. A decision resting on an unconfirmed assumption cannot exceed that assumption's confidence."
+    },
+    "impact": {
+      "type": "object",
+      "description": "Effect on the reconciliation, when known.",
+      "properties": {
+        "gap_before": { "type": "number" },
+        "gap_after": { "type": "number" },
+        "accounts_affected": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "supersedes": {
+      "type": "string",
+      "description": "id of the decision this replaces, if any."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Run in which this decision was first applied."
+    }
+  },
+  "examples": [
+    {
+      "id": "d-0007",
+      "ts": "2026-09-10T14:22:31Z",
+      "actor": "engine",
+      "kind": "convention",
+      "statement": { "equation": "closing = opening - movements", "movement_sign": -1 },
+      "reason": "Tested both conventions across all shared keys; subtraction reconciled 867 accounts versus 12 for addition.",
+      "evidence": { "reconciled_minus": 867, "reconciled_plus": 12, "keys_tested": 1346 },
+      "confidence": "HIGH",
+      "run_id": "run-001"
+    },
+    {
+      "id": "d-0012",
+      "ts": "2026-09-10T14:40:02Z",
+      "actor": "user",
+      "kind": "exclude_scope",
+      "statement": { "keys": ["2432-01", "2271-01"], "side": "closing_only" },
+      "reason": "Loan accounts are maintained in the treasury system and are out of scope for this sub-ledger reconciliation.",
+      "evidence": { "combined_balance": 378900000.0, "movements_found": 0 },
+      "confidence": "HIGH",
+      "impact": { "gap_before": 830637799.74, "gap_after": 451737799.74, "accounts_affected": 2 },
+      "run_id": "run-002"
+    },
+    {
+      "id": "d-0019",
+      "ts": "2026-09-10T15:03:44Z",
+      "actor": "agent",
+      "kind": "classify",
+      "statement": { "keys": ["1000-01", "1000-02"], "category": "SUBACCOUNT_MISATTRIBUTION" },
+      "reason": "The two sibling accounts show gaps that offset exactly, so the value was posted to the wrong sub-account rather than being missing.",
+      "evidence": { "gap_a": -7118.55, "gap_b": 7118.55, "shared_parent": "1000" },
+      "confidence": "HIGH",
+      "run_id": "run-002"
+    }
+  ]
+}

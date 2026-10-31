@@ -1,0 +1,31 @@
+{
+  "opening": {
+    "path": "sources/opening.csv",
+    "amount": "saldo_inicial",
+    "key_from": [
+      "account_description"
+    ]
+  },
+  "closing": {
+    "path": "sources/closing.csv",
+    "amount": "saldo_final",
+    "key_from": [
+      "account_description"
+    ]
+  },
+  "movements": {
+    "path": "sources/movements.csv",
+    "amount": "valor",
+    "key_from": [
+      "historico1",
+      "historico2"
+    ],
+    "rules": [
+      {
+        "name": "S0",
+        "pattern": null
+      }
+    ]
+  },
+  "decimal_style": "comma"
+}

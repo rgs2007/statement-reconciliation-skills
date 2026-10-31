@@ -1,0 +1,287 @@
+[
+  {
+    "detail": [
+      {
+        "cols": 4,
+        "likely_header_row": 3,
+        "name": "Saldos",
+        "preview": [
+          [
+            {
+              "kind": "text",
+              "v": "XXXX XXXXXXXXX XXXX - XX\u2026"
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            }
+          ],
+          [
+            {
+              "kind": "mixed",
+              "v": "XXXXXXX: ####-##"
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            }
+          ],
+          [
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            }
+          ],
+          [
+            {
+              "kind": "text",
+              "v": "XXXXX"
+            },
+            {
+              "kind": "text",
+              "v": "XXXXXXXXX"
+            },
+            {
+              "kind": "text",
+              "v": "XXXXX_X"
+            },
+            {
+              "kind": "text",
+              "v": "XXXXX_X"
+            }
+          ],
+          [
+            {
+              "kind": "number",
+              "v": "####"
+            },
+            {
+              "kind": "mixed",
+              "v": "######-## -XXXXXXX XXXXX\u2026"
+            },
+            {
+              "kind": "number",
+              "v": "####,##"
+            },
+            {
+              "kind": "number",
+              "v": "###,##"
+            }
+          ],
+          [
+            {
+              "kind": "number",
+              "v": "####"
+            },
+            {
+              "kind": "mixed",
+              "v": "######-## -XXXXXX XXXXXX\u2026"
+            },
+            {
+              "kind": "number",
+              "v": "#,##"
+            },
+            {
+              "kind": "number",
+              "v": "####,##"
+            }
+          ],
+          [
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            }
+          ],
+          [
+            {
+              "kind": "number",
+              "v": "####"
+            },
+            {
+              "kind": "mixed",
+              "v": "######-## -XXXXX XX XXXX\u2026"
+            },
+            {
+              "kind": "number",
+              "v": "###,##"
+            },
+            {
+              "kind": "number",
+              "v": "###,##"
+            }
+          ],
+          [
+            {
+              "kind": "text",
+              "v": "XXXXX"
+            },
+            {
+              "kind": "blank",
+              "v": ""
+            },
+            {
+              "kind": "number",
+              "v": "####,##"
+            },
+            {
+              "kind": "number",
+              "v": "####,##"
+            }
+          ]
+        ],
+        "rows": 9
+      },
+      {
+        "cols": 1,
+        "likely_header_row": null,
+        "name": "Notas",
+        "preview": [
+          [
+            {
+              "kind": "text",
+              "v": "XXXXXXXX XXXXXXXX - XXXX\u2026"
+            }
+          ]
+        ],
+        "rows": 1
+      }
+    ],
+    "format": "excel",
+    "path": "balancete_messy.xlsx",
+    "sha256": "45418e79889e687e47ba21e7df6c59829fc7944b013a73c7d81dfa93bae3052a",
+    "sheets": [
+      "Saldos",
+      "Notas"
+    ]
+  },
+  {
+    "amount_columns": [
+      "valor"
+    ],
+    "columns": [
+      "valor",
+      "historico1",
+      "historico2",
+      "source_id"
+    ],
+    "decimal_style": "comma",
+    "format": "csv",
+    "path": "movimento_messy.csv",
+    "preview": [
+      [
+        {
+          "kind": "number",
+          "v": "####,##"
+        },
+        {
+          "kind": "mixed",
+          "v": "######-## -XXXXXXX XXXXX\u2026"
+        },
+        {
+          "kind": "text",
+          "v": "XXXXX"
+        },
+        {
+          "kind": "mixed",
+          "v": "X#"
+        }
+      ],
+      [
+        {
+          "kind": "number",
+          "v": "-###,##"
+        },
+        {
+          "kind": "mixed",
+          "v": "######-## -XXXXXXX XXXXX\u2026"
+        },
+        {
+          "kind": "blank",
+          "v": ""
+        },
+        {
+          "kind": "mixed",
+          "v": "X#"
+        }
+      ],
+      [
+        {
+          "kind": "number",
+          "v": "####,##"
+        },
+        {
+          "kind": "mixed",
+          "v": "######-## -XXXXXX XXXXXX\u2026"
+        },
+        {
+          "kind": "text",
+          "v": "XXXXXX"
+        },
+        {
+          "kind": "mixed",
+          "v": "X#"
+        }
+      ],
+      [
+        {
+          "kind": "blank",
+          "v": ""
+        },
+        {
+          "kind": "text",
+          "v": "XXXXX XXX XXXXX"
+        },
+        {
+          "kind": "blank",
+          "v": ""
+        },
+        {
+          "kind": "mixed",
+          "v": "X#"
+        }
+      ]
+    ],
+    "rows_total": 4,
+    "sha256": "9df2bf709f27c4595d0d09f2ae08e1267cde1c240dfefc4c4f09bfa0bb76d27f"
+  }
+]

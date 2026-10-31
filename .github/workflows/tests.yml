@@ -1,0 +1,52 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The skill must work on an older interpreter (restricted corporate
+        # environments) and on the newest pandas, where `.astype(str)`
+        # preserves NaN — a real source of breakage this suite guards.
+        python-version: ["3.10", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Golden-file regression tests
+        run: python tests/run_tests.py
+
+      - name: Skill self-test
+        run: python statement-reconciliation/scripts/selftest.py
+
+      - name: Pytest suite
+        run: pytest tests/ -v
+
+      - name: Fixtures must be reproducible from the generator
+        # Regenerating the sources must not change them. If this fails, either
+        # a fixture was hand-edited or the generator drifted — both hide what
+        # the committed test data actually is.
+        run: |
+          python tests/make_fixtures.py
+          if ! git diff --exit-code -- tests/fixtures; then
+            echo "::error::Regenerating fixtures changed the committed sources."
+            echo "Run 'python tests/make_fixtures.py' locally and commit, or fix the generator."
+            exit 1
+          fi

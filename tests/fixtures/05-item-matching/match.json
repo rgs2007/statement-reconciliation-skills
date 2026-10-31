@@ -1,0 +1,8 @@
+{
+  "amount": "valor",
+  "ref": "doc",
+  "date": "data",
+  "tolerance": 0.01,
+  "max_subset": 4,
+  "node_cap": 200000
+}

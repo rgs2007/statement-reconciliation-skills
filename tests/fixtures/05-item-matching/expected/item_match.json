@@ -1,0 +1,46 @@
+{
+  "(all)": {
+    "matched_pairs": [
+      {
+        "pass": "EXACT",
+        "left": 3,
+        "right": 1,
+        "amount": 9900.0
+      },
+      {
+        "pass": "AMOUNT",
+        "left": 5,
+        "right": 2,
+        "amount": 640.0
+      },
+      {
+        "pass": "SUBSET",
+        "right": 0,
+        "left": [
+          0,
+          1,
+          2
+        ],
+        "amount": 2450.75
+      }
+    ],
+    "matched_by_pass": {
+      "EXACT": 1,
+      "AMOUNT": 1,
+      "SUBSET": 1
+    },
+    "left_total": 13065.75,
+    "right_total": 13050.75,
+    "unmatched_left": {
+      "rows": 1,
+      "net": 75.0,
+      "gross": 75.0
+    },
+    "unmatched_right": {
+      "rows": 1,
+      "net": 60.0,
+      "gross": 60.0
+    },
+    "residual": 15.0
+  }
+}

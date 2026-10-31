@@ -1,0 +1,60 @@
+{
+  "keys_total": 12,
+  "reconciled": 6,
+  "reconciled_pct": 50.0,
+  "sign_convention": "closing = opening + movements",
+  "convention_evidence": {
+    "reconciled_with_plus": 6,
+    "reconciled_with_minus": 1,
+    "keys_tested": 11
+  },
+  "gap_gross": 2009988.87,
+  "gap_net": -1976281.93,
+  "scope_only": {
+    "CLOSING_ONLY": 1,
+    "OPENING_ONLY": 0,
+    "MOVEMENT_ONLY": 0
+  },
+  "movements_total": 38,
+  "movements_unattributed": 1,
+  "attribution_rate_pct": 97.37,
+  "residual_net": 12345.67,
+  "residual_gross": 12345.67,
+  "rule_coverage": {
+    "S0": 37,
+    "UNATTRIBUTED": 1
+  },
+  "materiality": 0.01,
+  "datasets": [
+    {
+      "path": "sources/opening.csv",
+      "rows": 11,
+      "sha256": "61bfcbebcc1462ff9bccd10642ff947f7f793b58a2f0f2075d29ea22d690220f",
+      "role": "opening",
+      "sum": -404919.58
+    },
+    {
+      "path": "sources/closing.csv",
+      "rows": 12,
+      "sha256": "0a3d8ebb29b03efce86457ea590a9da03c8b75d2879d0f6d715b6887b94f117e",
+      "role": "closing",
+      "sum": -428732.12
+    },
+    {
+      "path": "sources/movements.csv",
+      "rows": 38,
+      "sha256": "7cd0bcd4883b1dbb923cc689db3db587d62e5a3b246498c4c289a44458fa4215",
+      "role": "movements",
+      "sum": 1964815.06
+    }
+  ],
+  "duplicate_rows": 4,
+  "duplicate_gross": 44894.41,
+  "consecutive_duplicate_rows": 3,
+  "reversal_rows": 2,
+  "reversal_gross": 8800.0,
+  "decisions_applied": 0,
+  "scope_excluded_keys": 0,
+  "gap_gross_at_parent": 2008393.11,
+  "parents_netting_to_zero": 1
+}

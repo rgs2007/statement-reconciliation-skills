@@ -1,0 +1,32 @@
+# Run output — regenerated, never committed.
+# These patterns are anchored so they cannot swallow the golden baseline in
+# tests/fixtures/*/expected/, which IS committed and is the whole point.
+/runs/
+/run/
+/report.md
+/reports/
+/metrics.json
+/breaks.csv
+/residual.csv
+
+# A live reconciliation working folder — may contain client data.
+/reconciliation/
+/cache/
+*.db
+/decisions.jsonl
+
+# Client data must never be committed: git history is permanent, and a
+# private repo can be shared later.
+*_raw.csv
+/data/
+/client/
+/sources/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
