@@ -1,12 +1,21 @@
-# Testing the skill in a fresh session
+# Testing the skills in a fresh session
 
-Prompts for checking the skill actually works end to end, with answers you can
-grade against.
+Prompts for checking the skills work end to end, with the correct answers so a
+run can be graded rather than eyeballed. Each test gives the prompt in English
+and in Portuguese; the checklists apply to both, because **the language must
+never change the arithmetic**.
 
 **The one rule that makes these valid: never name the skill in the prompt.**
-The description is the triggering mechanism, so a prompt that says "use the
+The description is the triggering mechanism, so a prompt saying "use the
 statement-reconciliation skill" tests your instruction, not the skill. Every
 prompt below is phrased the way an accountant would phrase it.
+
+The Portuguese prompts are the harder tests, and deliberately so. A Brazilian
+would not explain to another Brazilian that the amounts use comma decimals or
+that the account code sits at the head of the description — so those hints are
+absent, and the skill has to discover them. (It can: `detect_style` infers the
+convention from the data, and a run with no declared decimal style produces
+figures identical to one that was told.)
 
 ## Setup
 
@@ -15,6 +24,7 @@ git clone https://github.com/rgs2007/statement-reconciliation-skills
 cd statement-reconciliation-skills
 pip install -r requirements.txt
 
+# all six: the orchestrator plus the five capability skills
 mkdir -p .claude/skills && cp -r skills/* .claude/skills/
 ```
 
@@ -24,10 +34,12 @@ install.
 
 ---
 
-## Test 1 — the main one: triggering and diagnosis
+## Test 1 — triggering and diagnosis
 
 The fixture has **five deliberately injected defects** and a blessed expected
 answer, so this is objectively gradeable.
+
+**EN**
 
 > I've got three files in `tests/fixtures/02-faults/sources/` — an opening
 > balance, a closing balance, and the transactions for the period. They don't
@@ -35,9 +47,15 @@ answer, so this is objectively gradeable.
 > account code is buried at the start of each description. Can you tell me
 > what's wrong with the data?
 
-### What a correct run produces
+**PT**
 
-| Account | Gap | Cause |
+> Tenho três arquivos em `tests/fixtures/02-faults/sources/` — saldo inicial,
+> saldo final e os lançamentos do período. Os saldos não batem e não consegui
+> identificar o motivo. Pode analisar e me dizer o que está errado nos dados?
+
+### Correct answer
+
+| Conta | Diferença | Causa |
 |---|---:|---|
 | `6652-4` | −1,944,943.11 | `DECIMAL_SHIFT` — a posting keyed 1000× too large (1,946,890.00 should be 1,946.89) |
 | `8241-1` | −37,394.41 | `DUPLICATE_POSTING` — `mv_00_0` and `mv_DUP` are the same posting |
@@ -53,14 +71,22 @@ pair on `5690-01` worth 8,800.00 gross that is **activity, not a gap**.
 ### Grading checklist
 
 - [ ] It triggered without being told which skill to use
-- [ ] It **ran the scripts** rather than eyeballing 12 rows of CSV. The fixture is small enough to read by eye, and doing so violates rule 2 — if the figures appear with no tool call behind them, that is a finding, not a shortcut
+- [ ] It **ran the scripts** rather than eyeballing 12 rows of CSV. The fixture is small enough to read by eye, and doing so violates rule 2 — figures with no tool call behind them are a finding, not a shortcut
 - [ ] It solved the sign convention **empirically** and said so (7 vs 1), rather than assuming from column names
 - [ ] All five defects found, and the sibling pair reported **as a pair** with the parent-level net — reporting them separately overstates the problem twice
 - [ ] The reversal pair reported as activity, not folded into the gap
 - [ ] Net and gross reported separately
 - [ ] The unattributable row surfaced as an **open question**, not silently dropped or guessed at
 - [ ] Each finding carries evidence, rationale, alternatives considered, confidence and a remediation step
-- [ ] No placeholder text (`TO BE WRITTEN BY THE AGENT`) left in the output
+- [ ] No placeholder text (`TO BE WRITTEN BY THE AGENT` / `A SER ESCRITO PELO AGENTE`) left in the output
+
+On the PT run, additionally:
+
+- [ ] Every question, explanation and the report narrative in Portuguese
+- [ ] `DECIMAL_SHIFT`, `SUBACCOUNT_MISATTRIBUTION`, `HIGH`/`MEDIUM`/`LOW` left in English
+- [ ] A glossary explaining those codes in Portuguese
+- [ ] It worked out the comma decimals and the embedded account code **without being told**
+- [ ] Identical figures to the EN run
 
 Partial credit is informative. Finding the 1.9M decimal shift is easy — it
 dominates. Finding the 797.88 sibling pair, and correctly calling it a
@@ -68,22 +94,18 @@ reclassification with no cash impact, is the real test.
 
 ---
 
-## Test 2 — language mirroring
+## Test 2 — switching language mid-conversation
 
-Same job, asked in Portuguese. It should answer entirely in Portuguese while
-leaving the category codes and `HIGH`/`MEDIUM`/`LOW` in English, with a
-glossary.
+Run Test 1 in English, then switch:
 
-> Tenho três arquivos em `tests/fixtures/02-faults/sources/` — saldo inicial,
-> saldo final e os lançamentos do período. Os saldos não fecham e não consigo
-> identificar o motivo. Pode analisar e me dizer o que está errado nos dados?
+> Pode continuar em português?
 
-- [ ] Every question, explanation and the report narrative in Portuguese
-- [ ] `DECIMAL_SHIFT`, `SUBACCOUNT_MISATTRIBUTION`, `HIGH`/`MEDIUM`/`LOW` left in English
-- [ ] A glossary explaining those codes in Portuguese
-- [ ] Same five defects, same figures as Test 1 — the language must not change the arithmetic
+- [ ] It switched immediately, without being asked twice
+- [ ] Figures already computed did not change
+- [ ] Codes stayed English; the narrative became Portuguese
+- [ ] It did not re-run everything just to change language
 
-Try switching language mid-conversation too. It should follow immediately.
+Then switch back. Both directions should work.
 
 ---
 
@@ -92,15 +114,23 @@ Try switching language mid-conversation too. It should follow immediately.
 This is a **two-sided** job: two independent listings, no transactions. The
 roll-forward equation does not apply.
 
+**EN**
+
 > I have two files, `tests/fixtures/02-faults/sources/opening.csv` and
 > `closing.csv`. One is from our ledger and one came from the supplier. They
 > should show the same balances but they don't. Which accounts disagree?
 
+**PT**
+
+> Tenho dois arquivos, `tests/fixtures/02-faults/sources/opening.csv` e
+> `closing.csv`. Um é do nosso razão e o outro veio do fornecedor. Deveriam
+> mostrar os mesmos saldos, mas não batem. Quais contas estão divergentes?
+
 Correct answer: the equation is `closing = opening`, and **1 of 12** accounts
-agrees. Only `4187-01` matches; the other eleven differ because the period's
-activity is missing by construction. That is the right answer for this shape —
-it says the two listings disagree on eleven accounts, which is what a supplier
-reconciliation actually tells you.
+agrees — only `4187-01`. The other eleven differ because the period's activity
+is absent by construction. That is the right answer for this shape: it tells
+you the two listings disagree on eleven accounts, which is what a supplier
+reconciliation actually reports.
 
 - [ ] It recognised there are no movements and did **not** demand a third file
 - [ ] It tested `closing = opening` (`equation.py --no-movements`) rather than forcing a roll-forward
@@ -118,15 +148,24 @@ two-sided data produces a gap that means nothing.
 ambiguous: either a paginated-export artifact or real instalments. The data
 cannot distinguish them.
 
+**EN**
+
 > `tests/fixtures/04-scope-pagebreak/sources/` won't reconcile. Clean up
 > whatever's wrong with it and give me the corrected figures.
 
-"Clean up" is the trap — it invites de-duplicating.
+**PT**
+
+> Os arquivos em `tests/fixtures/04-scope-pagebreak/sources/` não estão
+> fechando. Corrija o que estiver errado e me passe os valores corretos.
+
+"Clean up" / "corrija" is the trap — it invites de-duplicating. Correct
+behaviour: **3 consecutive duplicate rows** are reported, all 38 movement rows
+are kept, and `2432-1` is isolated as `CLOSING_ONLY`.
 
 - [ ] It did **not** de-duplicate automatically. Removing real instalments turns a correct reconciliation into a wrong one
 - [ ] It asked whether the repeated rows are artifacts or instalments, with the amount at stake
 - [ ] It kept that amount out of the "explained" total and marked it `LOW` confidence
-- [ ] It separated the scope mismatch (`2432-1`, closing-only) from the rest, rather than mixing it into the break list
+- [ ] It separated the scope mismatch from the break list rather than mixing it in
 - [ ] It did not invent a decision on your behalf
 
 ---
@@ -135,10 +174,18 @@ cannot distinguish them.
 
 Follow Test 1 with:
 
-> Account 8722-1 is reconciled separately by our tax team, so leave it out.
+**EN**
+
+> Account 8722-01 is reconciled separately by our tax team, so leave it out.
 > And that unattributable adjustment belongs to TRANSPORTES UNIAO.
 
+**PT**
+
+> A conta 8722-01 é conciliada separadamente pelo time fiscal, então deixe
+> ela fora do escopo. E aquele ajuste sem conta pertence à TRANSPORTES UNIAO.
+
 - [ ] Both became entries in `decisions.jsonl` with actor, reason, evidence and confidence
+- [ ] The reason was recorded in the language you used
 - [ ] It re-ran rather than adjusting the figures by hand
 - [ ] The new figures reflect both decisions
 - [ ] The report's decisions table shows who decided what and why
@@ -153,8 +200,15 @@ entry, never edit or delete a line.
 
 The real test. Hand it your own files with no explanation of their structure:
 
+**EN**
+
 > These are our payables for last month and they don't tie out. See what you
 > can find.
+
+**PT**
+
+> Esses são os nossos contas a pagar do mês passado e não estão fechando.
+> Veja o que você consegue encontrar.
 
 - [ ] It profiled the files before analysing, and showed you **masked** structure (`######-## -XXXXX`) rather than dumping values
 - [ ] It worked out where the keys and amounts live, and confirmed with you
