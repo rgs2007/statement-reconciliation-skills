@@ -1,0 +1,26 @@
+key,side,ref,amount,date,line_id,description,_a
+(all),left,,200000.00,2024-01-01,b3ec66ad-4272-479d-ad1f-47cd5796c1ea,Opening balance — owner's equity contribution,200000.0
+(all),right,,-13.55,2024-01-31,8eb9ae71-f340-471e-828c-04f77d297fe5,Monthly account fee,-13.55
+(all),right,,-21.76,2024-02-29,b37cfd2e-e9ca-48ab-84b5-1a729a9f7dd0,Monthly account fee,-21.76
+(all),right,,-14.00,2024-03-31,9105225a-1146-40dd-a6b5-a2451e371fea,Monthly account fee,-14.0
+(all),right,,-11.48,2024-04-30,d084e1e3-fa25-46fd-a453-8633705afc24,Monthly account fee,-11.48
+(all),right,,-13.64,2024-05-31,d1982dfa-0b4e-4e1f-b3c3-b588550c95bd,Monthly account fee,-13.64
+(all),right,,-28.67,2024-06-30,47b15d20-8b71-4521-b8c7-4344f0584e89,Monthly account fee,-28.67
+(all),right,,-19.14,2024-07-31,ff03efe7-bb98-4f2d-ba46-f541eb776f67,Monthly account fee,-19.14
+(all),right,,-19.14,2024-08-31,011634bc-3c45-46ca-9c62-25b0a0ad8e0d,Monthly account fee,-19.14
+(all),right,,-24.45,2024-09-30,7c0633cf-6dac-4590-93bd-e0d23753cb04,Monthly account fee,-24.45
+(all),right,,-12.86,2024-10-31,d8bb7f57-475f-4bb0-9aa5-254241a93e1f,Monthly account fee,-12.86
+(all),right,,-13.51,2024-11-30,49e2ff61-a3bc-47fe-9051-81bdf931213b,Monthly account fee,-13.51
+(all),right,,-13.40,2024-12-31,c974bf5c-5a49-465c-bae8-441586e2fe2a,Monthly account fee,-13.4
+(all),right,,-27.13,2025-01-31,391fafb7-6aff-48f7-bd24-d5ffdbb34e38,Monthly account fee,-27.13
+(all),right,,-12.00,2025-02-28,cd68bb86-4ed7-4441-89bf-f07f300f00b1,Monthly account fee,-12.0
+(all),right,,-29.08,2025-03-31,1f234a09-d027-468a-94fc-d1f6957f8a44,Monthly account fee,-29.08
+(all),right,,-12.90,2025-04-30,2d0aa231-96d9-4675-98af-f0323ecb732b,Monthly account fee,-12.9
+(all),right,,-29.96,2025-05-31,4ad9f13f-2270-4e49-a8ce-b7549760cff0,Monthly account fee,-29.96
+(all),right,,-15.82,2025-06-30,5f9f611c-19c8-4a45-a1e2-8ea48bb396f9,Monthly account fee,-15.82
+(all),right,,-20.74,2025-07-31,3a860400-635f-4768-bf28-6778ac755315,Monthly account fee,-20.74
+(all),right,,-15.82,2025-08-31,c158a6b8-aa36-4116-a61c-a46946f6995e,Monthly account fee,-15.82
+(all),right,,-11.09,2025-09-30,f91df020-f890-4679-9126-35d48912f6a1,Monthly account fee,-11.09
+(all),right,,-29.29,2025-10-31,e5125b5e-2d5b-4f1c-86a8-d68c521ab1ca,Monthly account fee,-29.29
+(all),right,,-13.40,2025-11-30,e9ef91bf-c920-4322-b5a7-a6c04930e08c,Monthly account fee,-13.4
+(all),right,,-23.02,2025-12-31,aff1c918-bd08-4fb8-8016-9d7be159d3d4,Monthly account fee,-23.02

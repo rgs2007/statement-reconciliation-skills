@@ -117,6 +117,8 @@ tests/                          golden-file regression suite — see tests/READM
     sources/                    committed input files
     datamap.json                how the engine reads them
     expected/                   the blessed expected report
+  public/                       third-party test data with independent answer
+                                keys, inputs/ and expected/ kept apart
 ```
 
 The agent reads `SKILL.md` first and pulls in a reference only when it reaches that phase, so context stays small on simple jobs.
@@ -197,11 +199,14 @@ python tests/run_tests.py       # check every fixture
 pytest tests/ -v               # same, with per-fixture reporting
 ```
 
-Six fixtures cover: a clean ledger that must reconcile 100% with **zero**
+Nine fixtures cover: a clean ledger that must reconcile 100% with **zero**
 findings; five injected defects that must all surface; decision-log replay
 including a superseded decision; scope mismatch and page-break duplication;
-item matching with a lump payment settling three invoices; and the masked
-profiler. Full detail in [`tests/README.md`](tests/README.md).
+item matching with a lump payment settling three invoices; the masked
+profiler; and three cases reshaped from published third-party data whose
+contracts come from an independent answer key. Full detail in
+[`tests/README.md`](tests/README.md); the public data and what it found are in
+[`tests/public/README.md`](tests/public/README.md).
 
 Alongside the goldens, each fixture declares **behavioural contracts** — what
 it exists to prove. These are checked even during `--update`, so re-blessing

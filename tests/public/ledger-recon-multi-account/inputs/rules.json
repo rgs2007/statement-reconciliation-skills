@@ -1,0 +1,25 @@
+{
+  "source": "dikaakid/ledger-reconciliation-tool, ledger_recon/config.py defaults",
+  "match_on": "payment reference + amount (+ occurrence order); there is no shared transaction id",
+  "reference_lengths_tried": [16, 15, 14],
+  "reference_patterns_in_bank_description": {
+    "TRF": "TRF\\s*(\\d{N})",
+    "REF": "REF(\\d{N})",
+    "LEADING": "^(\\d{N})#"
+  },
+  "prefix_length": 5,
+  "prefix_to_account": {
+    "88001": "0100000001",
+    "88002": "0100000001",
+    "88003": "0100000002",
+    "88004": "0100000003",
+    "88005": "0100000002"
+  },
+  "routing_effective_date": "2026-01-01",
+  "statement_rows_matched": "direction = CR only",
+  "ledger_rows_matched": "status = SUCCESS only",
+  "amount_compare": "exact, as integer minor units (2 decimals)",
+  "date_window": "same calendar day (cross-midnight items stay open and are rechecked up to 7 days later)",
+  "match_quality_by_time_gap": {"Strong": "<= 1 minute", "Moderate": "<= 10 minutes", "Weak": "> 10 minutes"},
+  "incomplete_statement_rule": "a day whose statement has no referenced credits while the ledger is busy is skipped"
+}

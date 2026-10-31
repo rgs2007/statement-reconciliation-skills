@@ -1,0 +1,3 @@
+id,company_id,account_name,bsb,account_number,bank_name,account_type,gl_account_code,opening_balance,current_balance,is_active
+d132cb3a-2203-401c-8cb0-6fe6ea3480ef,69e60d6b-99e6-44ad-86d0-b3ebbf8d0ea0,Business Operating Account,375342891,60682698,Wells Fargo,operating,1-1000,0.0,2007552.0,True
+f1128408-d901-4cf5-96c8-02d8f3682457,69e60d6b-99e6-44ad-86d0-b3ebbf8d0ea0,Business Savings Account,375342891,50179795,Wells Fargo,savings,1-1010,0.0,0.0,True

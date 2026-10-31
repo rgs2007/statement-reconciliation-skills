@@ -1,0 +1,18 @@
+{
+  "opening": {
+    "path": "sources/opening.csv",
+    "key": "account",
+    "amount": "balance"
+  },
+  "closing": {
+    "path": "sources/closing.csv",
+    "key": "account",
+    "amount": "balance"
+  },
+  "movements": {
+    "path": "sources/movements.csv",
+    "key": "account",
+    "amount": "amount"
+  },
+  "decimal_style": "dot"
+}

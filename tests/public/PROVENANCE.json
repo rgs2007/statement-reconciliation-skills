@@ -1,0 +1,597 @@
+{
+  "description": "Third-party test data for the statement-reconciliation skill. Every file is pinned by sha256. committed=false files are not stored in git; fetch them with tests/public/fetch_public.py.",
+  "retrieved": "2026-10-11",
+  "licenses": {
+    "CC-BY-NC-4.0": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "CC-BY-4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "MIT": "see tests/public/licenses/",
+    "NONE-STATED": "no license in the source repository: fetched on demand, never committed"
+  },
+  "files": [
+    {
+      "path": "tests/public/mindweave-us/inputs/bank/bank_accounts.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 453,
+      "sha256": "bc3a4d01e9924745ae0f8371acfd7caf36a7810ecdc5c24d6e6bb791b4a9ca07",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/bank-transactions-us/resolve/main/data/bank_accounts.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/bank/bank_statements.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 3738,
+      "sha256": "1bd7eaa8f67e5c1061dedd4e0d02fd64fc582219fdec7c9e3c37511494bd003c",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/bank-transactions-us/resolve/main/data/bank_statements.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/bank/bank_transactions.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 718353,
+      "sha256": "1b20b074ecd254ba0e6056f2e2f196ebff7273aeabc54e389958cd7bbd048604",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/bank-transactions-us/resolve/main/data/bank_transactions.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/bank/companies.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 428,
+      "sha256": "e370c30c18c7ab2397ae91b36570209aec48cefd95cc13b01f0269a8588505cc",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/bank-transactions-us/resolve/main/data/companies.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/gl/chart_of_accounts.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 8964,
+      "sha256": "156e10c1bdcd89f1d05da5ece223866ee2ad9d070868b0b484b10c5f75c1a6a8",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/accounting-ledger-us/resolve/main/data/chart_of_accounts.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/gl/companies.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 428,
+      "sha256": "e370c30c18c7ab2397ae91b36570209aec48cefd95cc13b01f0269a8588505cc",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/accounting-ledger-us/resolve/main/data/companies.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/gl/journal_entries.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 1183519,
+      "sha256": "5f8491158bf8c02f7b67f433e970ac5b4acee624eb3eddeede9ffea170adc819",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/accounting-ledger-us/resolve/main/data/journal_entries.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/gl/journal_entry_lines.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 2567083,
+      "sha256": "456b549d1ca2a55d407a033b3a0dfa0033d2376252406cc05371f9812a5c40a9",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/accounting-ledger-us/resolve/main/data/journal_entry_lines.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/inputs/gl/trial_balances.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 65171,
+      "sha256": "965c4340ff63041a62d1f7b93425ccc91e99944078b463d0dcf700b6566ae299",
+      "license": "CC-BY-NC-4.0",
+      "source": "https://huggingface.co/datasets/mindweave/accounting-ledger-us/resolve/main/data/trial_balances.csv"
+    },
+    {
+      "path": "tests/public/mindweave-us/expected/derived_gl_rollforward.csv",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 44672,
+      "sha256": "c4e9c36db760e4fb1fb03822316f218e400ef857b12aa9bdf561c8f41f60174d",
+      "license": "CC-BY-NC-4.0",
+      "note": "computed from the inputs by derive_expected.py; no answer key is published for this dataset"
+    },
+    {
+      "path": "tests/public/mindweave-us/expected/derived_bank_vs_gl_transactions.csv",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 869175,
+      "sha256": "726fac76d2c70595b71b27fc62a7489509de90592e048e2ed6fd1aa63c3627cb",
+      "license": "CC-BY-NC-4.0",
+      "note": "computed from the inputs by derive_expected.py; no answer key is published for this dataset"
+    },
+    {
+      "path": "tests/public/mindweave-us/expected/derived_bank_vs_gl_monthly.csv",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 3248,
+      "sha256": "e3936b73e813788baf405ca44d044368e60466d26e25b09a461025c931ff48c5",
+      "license": "CC-BY-NC-4.0",
+      "note": "computed from the inputs by derive_expected.py; no answer key is published for this dataset"
+    },
+    {
+      "path": "tests/public/mindweave-us/expected/derive_expected.py",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 9062,
+      "sha256": "c8279b85aa8aba784f70ae7db2371bffd55d8fca5e054720fbfcf6ea9fc3b61e",
+      "license": "CC-BY-NC-4.0",
+      "note": "computed from the inputs by derive_expected.py; no answer key is published for this dataset"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/clean-settlement/internal_transactions.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 11788,
+      "sha256": "de7ad57c1d4b22997ee3bcf119356e39d6aeb652c97e2436589550714b1aaa38",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/internal_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/clean-settlement/processor_transactions.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 13267,
+      "sha256": "cbf296dedcb4f8b4f4b779f33d068e9e7652890316354269ff909b4b572bd81f",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/processor_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/clean-settlement/bank_settlements.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 1237,
+      "sha256": "fd696c30cae4deed55b1610a1d0eb3e35fa2a70b8ada65eefadd38eda24cc19c",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/bank_settlements.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/clean-settlement/expected_reconciliation.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 21626,
+      "sha256": "f66de6091706b4497f208f1909ce232f2280adc15200ed30033a19e4f501ff58",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/expected_reconciliation.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/clean-settlement/scenario_manifest.json",
+      "origin": "published",
+      "committed": true,
+      "bytes": 2046,
+      "sha256": "4cd15f143ccf911897c3b917185c13159124fcece9f66bb008be0d0b6819be7e",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/scenario_manifest.json"
+    },
+    {
+      "path": "tests/public/reconriver/expected/clean-settlement/README.md",
+      "origin": "published",
+      "committed": true,
+      "bytes": 1594,
+      "sha256": "87230650d87a3a4d209d9540c842e867869f6fd281a8ae8a2faaf251f4d7db08",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/clean-settlement/README.md"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/mixed-exceptions/internal_transactions.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 118041,
+      "sha256": "41b10dada5952c24103dca2e7c73713d8b99f1616d7bb953a5455904d4169459",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/internal_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/mixed-exceptions/processor_transactions.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 141152,
+      "sha256": "b047ae72f6f36014012243074e77e37f5ae35635192fd0fc44c08e498ac754cf",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/processor_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/mixed-exceptions/bank_settlements.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 34457,
+      "sha256": "ab04479ee55193e39f965067af9348fddb01aa79b7d1255ecd59105f708a66ee",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/bank_settlements.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/mixed-exceptions/internal_transactions_duplicate.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 118041,
+      "sha256": "41b10dada5952c24103dca2e7c73713d8b99f1616d7bb953a5455904d4169459",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/internal_transactions_duplicate.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/mixed-exceptions/expected_reconciliation.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 255388,
+      "sha256": "3fe217524798882c3ee2c329ecfb34d23d574b02835fd0dcf0dc481c94b28e3a",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/expected_reconciliation.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/mixed-exceptions/scenario_manifest.json",
+      "origin": "published",
+      "committed": true,
+      "bytes": 4407,
+      "sha256": "feeae0e3eb8cb4ee3ba8ff8c76b65f7cd21ae7886ddafdbf29108ac95b698d74",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/scenario_manifest.json"
+    },
+    {
+      "path": "tests/public/reconriver/expected/mixed-exceptions/README.md",
+      "origin": "published",
+      "committed": true,
+      "bytes": 2685,
+      "sha256": "583881c26e5f0b04461b354e7bb2496f05b449bbefac91c7a997c742a0c490aa",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/mixed-exceptions/README.md"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/month-end-close/internal_transactions.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 1166721,
+      "sha256": "0909917ebb0a8a365561e16b554d97801d306e8d42d9a4ae1b3bbeab26b33805",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/internal_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/month-end-close/processor_transactions.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 1336002,
+      "sha256": "68b2ccfc3264debeafb0cbcc9ca42da4c9e297fd85c3e755e3b08eaf3a9b5d5d",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/processor_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/month-end-close/bank_settlements.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 240065,
+      "sha256": "950e0cb5715bc3c5f6b9cb190e4f38a61aab2dcbe691d57979183f9678f72fc0",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/bank_settlements.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/month-end-close/expected_reconciliation.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 2338949,
+      "sha256": "228cc7395be543867fe3106e3c16205d14882c4e059232de9cc181c80050cc2d",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/expected_reconciliation.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/month-end-close/scenario_manifest.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3567,
+      "sha256": "f3c45563d30ac9004ec7795a420db16cb7be99971db27867663abe9dc67fb00f",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/scenario_manifest.json"
+    },
+    {
+      "path": "tests/public/reconriver/expected/month-end-close/README.md",
+      "origin": "published",
+      "committed": false,
+      "bytes": 2245,
+      "sha256": "a0df4fdce4a91ca0880fb466a601ba302c1a5fb059ef74ad1ab3f56100d47dca",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/month-end-close/README.md"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/failure-recovery/internal_transactions.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 1177350,
+      "sha256": "8b409b250ec24ed02d0a8a1896c64be0d014f7c8605f520d813fe43c60e323f1",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/internal_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/failure-recovery/processor_transactions.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 1338591,
+      "sha256": "565a014bc60060a44d360acda9bbe284e5e5fd9c1e35d9a69cc65cfab1d0b40c",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/processor_transactions.csv"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/failure-recovery/bank_settlements.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 213468,
+      "sha256": "6f358688a28534fb74cbd4a5a21b6ea21f94487a769e57d76f766eea8e159d20",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/bank_settlements.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/failure-recovery/expected_reconciliation.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 2303401,
+      "sha256": "65aba82be19954f8b707b0f43930a8e9af613963557baef75f0c88e276bb339d",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/expected_reconciliation.csv"
+    },
+    {
+      "path": "tests/public/reconriver/expected/failure-recovery/scenario_manifest.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3399,
+      "sha256": "47ed566887e83115fef0f82bc0ee9b87f5ef831ca760f36acb8e43edbc99f152",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/scenario_manifest.json"
+    },
+    {
+      "path": "tests/public/reconriver/expected/failure-recovery/README.md",
+      "origin": "published",
+      "committed": false,
+      "bytes": 2255,
+      "sha256": "446b836c525386b0c7fc93cb409acf5efa66ec54326381def167457730da72f8",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/generated/failure-recovery/README.md"
+    },
+    {
+      "path": "tests/public/reconriver/expected/schemas/csv-columns.json",
+      "origin": "published",
+      "committed": true,
+      "bytes": 1578,
+      "sha256": "2446d82cc30ce3dc661b1098374dda0ba96429029c02209feab9ecb3d9930ceb",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/schemas/csv-columns.json"
+    },
+    {
+      "path": "tests/public/reconriver/expected/schemas/scenario_manifest.schema.json",
+      "origin": "published",
+      "committed": true,
+      "bytes": 3643,
+      "sha256": "73f96b38ba1d16df08d5205d17c391d31e5854e00b333058bd03095af1c78fb4",
+      "license": "CC-BY-4.0",
+      "source": "https://raw.githubusercontent.com/heybadrinath/reconriver/ddeced72de9161087047c379e0e0d66eaec8acc5/datasets/schemas/scenario_manifest.schema.json"
+    },
+    {
+      "path": "tests/public/reconriver/inputs/rules.json",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 1219,
+      "sha256": "92c82b4a65f410f2d6c03d0d1b362c506ae2feec05a836e69045e52320581639",
+      "license": "CC-BY-4.0",
+      "note": "business rules transcribed from the dataset README and pack READMEs"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/ledger_2026-01-05_2026-01-06.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 10092,
+      "sha256": "703c79bf68795ff06833af7341a20171f9f155bb32d03b96df14b9725dfbf9d7",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/examples/dummy_data/ledger_2026-01-05_2026-01-06.csv"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/ledger_2026-01-07.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 2244,
+      "sha256": "547014d8806cba6879fbff988917feea3076d40bdab906cd177ded86a5904eb4",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/examples/dummy_data/ledger_2026-01-07.csv"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/rules.json",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 1097,
+      "sha256": "0cc55110aec9b6f595fcd31afcb99927b350a4774ddc6911f9b26a8466d097b2",
+      "license": "MIT",
+      "note": "matching rules transcribed from ledger_recon/config.py defaults"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/statement_2026-01-05.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 6355,
+      "sha256": "b86e6b6222f8a834ddc3a43e3f31274b3e583bf6b1eeeb65fd6884acf3961c92",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/examples/dummy_data/statement_2026-01-05.csv"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/statement_2026-01-06.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 6259,
+      "sha256": "6f03b2953ee2279352b53cf427547bd025323c33b7ba699842d28ed97d6f6c2d",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/examples/dummy_data/statement_2026-01-06.csv"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/inputs/statement_2026-01-07.csv",
+      "origin": "published",
+      "committed": true,
+      "bytes": 187,
+      "sha256": "3340d48dd1e0164fb65a7a8942ef40f6307d7c01bbd46e3a345603eda33a8b47",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/examples/dummy_data/statement_2026-01-07.csv"
+    },
+    {
+      "path": "tests/public/ledger-recon-multi-account/expected/SAMPLE_OUTPUT.md",
+      "origin": "published",
+      "committed": true,
+      "bytes": 3196,
+      "sha256": "5eac94d42a19b29c64fac0d6055c35afd1ae87b1cb076bc867180ec9b70b3853",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/dikaakid/ledger-reconciliation-tool/79a9ad767662bc0fc09ee80f3b94f467cf15015a/docs/SAMPLE_OUTPUT.md"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/bank.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3206,
+      "sha256": "71370e4f447ebc0e50707f7ecf83fa73f135668fd92d1f090a8336327fdd8283",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/bank.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/bank.xlsx",
+      "origin": "published",
+      "committed": false,
+      "bytes": 6814,
+      "sha256": "3330968ceb8fc9b7c738f4937a43b5e3162656ebfdc06b5d4fe6ba33e8f15090",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/bank.xlsx"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/bank_debit_credit.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3313,
+      "sha256": "effa337d597b121859a54b0682e084b6e17c2d72668132b0f32336df6dbe7ae6",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/bank_debit_credit.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/books.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3373,
+      "sha256": "fbc3d0c5f99b04dedeb6a5a8f827f09090f1a5ccc77519f64423c20f12ee1cd9",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/books.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/books.xlsx",
+      "origin": "published",
+      "committed": false,
+      "bytes": 7188,
+      "sha256": "07c34e2f69a5f2cd61705e9ef71258ef7846ef1ac72fe6dd23728787f35e270f",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/books.xlsx"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/balances.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 112,
+      "sha256": "f335555e3e556d8b54eec4c744cefe5042dfc1c2ca4baff201ae64cd57fffe2e",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/balances.json"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/formats/format_a.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3460,
+      "sha256": "35eed83f78e2f09bd2f87d10d0696614363d7afd4441b99bba6232bdc5ab817e",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/formats/format_a.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/formats/format_b.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3361,
+      "sha256": "c0cd6e41b4407fe0ef50c9778a0edb89a0f065cc8dfa2e4dde7ca769bb507211",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/formats/format_b.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data/formats/format_c.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3258,
+      "sha256": "888b0dcda5b953417d54e39e6bb8c8e55f2df34bc7fbd716abcc961d3277232e",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/formats/format_c.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data_error/bank.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3206,
+      "sha256": "71370e4f447ebc0e50707f7ecf83fa73f135668fd92d1f090a8336327fdd8283",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data_error/bank.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data_error/books.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 3373,
+      "sha256": "36816119f16ae26eda26714187c60e46e70ef80b850cda100b7f14bd49decb66",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data_error/books.csv"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/sample_data_error/balances.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 112,
+      "sha256": "ab2643a8d5f5a2d07fad0c9448a22bf385aaa2b8e60b6a0817d4afc425887025",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data_error/balances.json"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/mappings/format_a.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 222,
+      "sha256": "22ddedb895be9143b452a443a3735b551ccd2bbbc8d6d892cfc4af19f61ebf8d",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/mappings/format_a.json"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/mappings/format_b.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 239,
+      "sha256": "6f5d8244346e4fc4b982597a38e10a7570c5fc95ae799549e91714cbf9f86476",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/mappings/format_b.json"
+    },
+    {
+      "path": "tests/public/cuadrador/inputs/mappings/format_c.json",
+      "origin": "published",
+      "committed": false,
+      "bytes": 202,
+      "sha256": "fa181a11eef9dadaca4863b408e3f24d23d761dee4005e63dfecaad3c2d467e6",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/mappings/format_c.json"
+    },
+    {
+      "path": "tests/public/cuadrador/expected/expected_results.csv",
+      "origin": "derived",
+      "committed": true,
+      "bytes": 381,
+      "sha256": "97a65df838028d265233981d8594eb87f1fcff09ff38da7a8059399cafefbe64",
+      "license": "NONE-STATED",
+      "note": "per-case expected difference, from the source repository's tests and ESTADO.md"
+    },
+    {
+      "path": "tests/public/cuadrador/expected/sample_data/expected.csv",
+      "origin": "published",
+      "committed": false,
+      "bytes": 4509,
+      "sha256": "8f5b0da751957beb28203f5472012888d6b46415636655838e9635638db18929",
+      "license": "NONE-STATED",
+      "source": "https://raw.githubusercontent.com/d2fzrsthmj-source/cuadrador/f8649b6768a5cc44f540d85c58854f6781634a70/sample_data/expected.csv"
+    }
+  ]
+}

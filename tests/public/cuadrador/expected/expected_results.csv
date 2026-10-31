@@ -1,0 +1,3 @@
+input_folder,statement_date,bank_ending_balance,book_ending_balance,expected_unexplained_difference,cause
+sample_data,2026-08-31,94505.90,102862.94,0.00,All differences between bank and books are explained by reconciling items
+sample_data_error,2026-08-31,94505.90,102952.94,-90.00,"Check 1043 (Red Barn Hardware): bank cleared -540.00, books recorded -450.00 (transposed digits)"
