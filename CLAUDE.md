@@ -9,18 +9,23 @@ Claude Code does not read `AGENTS.md`, so this file carries the same guidance.
 [`AGENTS.md`](AGENTS.md) is the tool-agnostic copy; both are generated from
 [`skills/statement-reconciliation/SKILL.md`](skills/statement-reconciliation/SKILL.md).
 
-## Preferred: install as a skill
+## Preferred: install the skills
 
-This repository *is* a skill. Installed, it triggers on description alone with
-no instruction file needed:
+This repository *is* a set of skills — an orchestrator plus five capability
+skills. Installed, they trigger on description alone with no instruction file
+needed:
 
 ```bash
-mkdir -p .claude/skills && cp -r skills/statement-reconciliation .claude/skills/   # this project
-mkdir -p ~/.claude/skills && cp -r skills/statement-reconciliation ~/.claude/skills/  # everywhere
+# all six: the orchestrator plus the five capability skills
+mkdir -p .claude/skills  && cp -r skills/* .claude/skills/    # this project
+mkdir -p ~/.claude/skills && cp -r skills/* ~/.claude/skills/  # everywhere
 ```
 
-This file is the fallback for working *on* the repository, or when the skill is
-not installed.
+Copy all of them: the orchestrator decides the flow but computes nothing, so
+on its own it has no engine to call.
+
+This file is the fallback for working *on* the repository, or when the skills
+are not installed.
 
 ## When this applies
 
