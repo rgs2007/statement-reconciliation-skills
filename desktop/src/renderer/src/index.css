@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  body {
+    overflow: hidden;
+  }
+  /* A scrollbar that does not fight the dark surface. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #373d4a;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4d586c;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-ink-800 bg-ink-900;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-flow-600 text-white hover:bg-flow-500;
+  }
+  .btn-ghost {
+    @apply btn border border-ink-800 text-ink-200 hover:bg-ink-800;
+  }
+  .label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-ink-400;
+  }
+}

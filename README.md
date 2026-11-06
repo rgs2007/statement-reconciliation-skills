@@ -184,6 +184,23 @@ then run the sync.
 
 **Parent-level rollup separates misposting from missing money.** Offsetting sibling sub-accounts collapse to zero at the parent. The difference between leaf-level and parent-level totals is one of the most useful numbers in the report.
 
+## Desktop app
+
+A Windows desktop interface lives in [`desktop/`](desktop/): a notebook pane
+for the figures and reports, a chat pane to drive it, and an installer that
+fetches Claude and installs the skills per project so a project folder is
+self-contained and portable.
+
+```bash
+cd desktop && npm install && npm run dev
+npm run dist:win     # the Windows installer
+```
+
+Everything a project produces — uploaded sources, runs, `decisions.jsonl`,
+reports, the notebook and `MEMORY.md` — is saved in one folder, so closing the
+app loses nothing and reopening resumes the same Claude session. See
+[`desktop/README.md`](desktop/README.md).
+
 ## Verification
 
 Two independent suites, and they check different things.

@@ -30,3 +30,9 @@ venv/
 .DS_Store
 .idea/
 .vscode/
+
+# Desktop app build output
+desktop/node_modules/
+desktop/out/
+desktop/release/
+desktop/.vite/

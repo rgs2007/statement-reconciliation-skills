@@ -1,0 +1,66 @@
+{
+  "name": "flowingsoft-reconciler",
+  "version": "1.0.0",
+  "description": "FlowingSoft Reconciler — desktop interface for AI-assisted statement reconciliation",
+  "main": "./out/main/index.js",
+  "author": "FlowingSoft (www.flowingsoft.com)",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --ext .ts,.tsx",
+    "dist:win": "npm run build && electron-builder --win --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "6.3.9"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.1.0",
+    "@testing-library/user-event": "14.5.2",
+    "@types/node": "22.10.2",
+    "@types/react": "18.3.17",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.3.4",
+    "@vitest/coverage-v8": "2.1.8",
+    "autoprefixer": "10.4.20",
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8",
+    "electron-vite": "2.3.0",
+    "jsdom": "25.0.1",
+    "postcss": "8.4.49",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-markdown": "9.0.1",
+    "recharts": "2.15.0",
+    "remark-gfm": "4.0.0",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.2",
+    "vite": "5.4.11",
+    "vitest": "2.1.8",
+    "zustand": "5.0.2",
+    "@tanstack/react-table": "8.20.5"
+  },
+  "build": {
+    "appId": "com.flowingsoft.reconciler",
+    "productName": "FlowingSoft Reconciler",
+    "directories": { "output": "release", "buildResources": "resources" },
+    "files": ["out/**/*", "resources/**/*"],
+    "extraResources": [{ "from": "../skills", "to": "skills" }],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "resources/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "FlowingSoft Reconciler"
+    }
+  }
+}

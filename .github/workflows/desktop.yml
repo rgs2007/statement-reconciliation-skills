@@ -1,0 +1,55 @@
+name: desktop
+
+on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'skills/**', '.github/workflows/desktop.yml']
+  pull_request:
+    paths: ['desktop/**', 'skills/**', '.github/workflows/desktop.yml']
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: desktop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build (main, preload, renderer)
+        run: npx electron-vite build
+
+  # The installer is built on Windows because that is what it targets; a
+  # cross-built NSIS package is not the artifact users would receive.
+  package-windows:
+    runs-on: windows-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - run: npm ci
+      - name: Build the Windows installer
+        run: npx electron-builder --win --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flowingsoft-reconciler-win
+          path: desktop/release/*.exe
+          if-no-files-found: error
