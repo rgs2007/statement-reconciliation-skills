@@ -95,7 +95,10 @@ detect_duplicates.py    --run runs/r1
 detect_reversals.py     --run runs/r1
 resolve_signals.py      --run runs/r1
 
-# 5 — finish
+# 5 — what is worth asking, before writing anything up
+questions.py --run runs/r1 --budget 3
+
+# 6 — finish
 residual.py  --run runs/r1
 summarize.py --run runs/r1 --out runs/r1/report-input
 ```
@@ -117,6 +120,61 @@ instead of producing a wrong number. Still, know why the constraints exist:
 - **Every detector requires `equation`.** `detect_duplicates` especially: it is gated on break status, and that gate is what stops a clean ledger reporting false duplicates. `detect_reversals` is the one exception — it needs only the movements.
 - **Detector order is irrelevant.** Precedence is declared by priority in `resolve_signals`, not by call order. Run them in any sequence.
 - **Skipping a step is allowed and recorded.** `summarize` reports which detectors did not run, as caveats in the output. A cause you did not test for is not a cause you ruled out — say that in the report rather than implying coverage you do not have.
+
+## Interviewing the client
+
+Behave like an accountant working with a client: clarify what is genuinely
+unclear, assume what is conventional, and never be slower than the accountant
+would have been working alone. Full protocol, with phrasing and a worked
+example: `skills/statement-reconciliation/references/interview.md`.
+
+**Never ask before computing.** Run the engine with inferred defaults first.
+The data settles the decimal convention, the key location, the sign
+convention, which accounts break and by how much, and which breaks have a
+conclusive cause — so most of what you would have asked is answered for free,
+and the questions that remain can be priced. The first pass is cheap and
+recomputable, which is what stops a wrong assumption becoming a wrong
+analysis.
+
+Then run `questions.py`, which enumerates the surviving uncertainties from the
+actual figures and splits them into **ask** and **assume**:
+
+```bash
+questions.py --run runs/r1 --budget 3
+```
+
+**One checkpoint, everything at once.** Send a single message with what you
+established (two or three lines with the numbers), at most **three** questions,
+and the assumptions you applied — stated plainly so the client can object
+without being asked. Independent questions never go in a queue; round-trips
+are what make this slower than doing it by hand.
+
+A question earns its place only if it survives all four filters:
+
+1. **The data cannot answer it.** Inquiry alone is weak evidence and is meant to be corroborated. Offsetting sibling pairs are arithmetically conclusive — asking about them signals you did not look.
+2. **The amount is above materiality.** Gate on absolute amount, not share of the gap: one huge finding makes every other real problem look trivial.
+3. **The answers would change a number.** If every answer leads to the same treatment, pick one and say so.
+4. **It is not already in the decision log.**
+
+**Rank by amount, with one override:** a question whose default could make the
+answer *wrong* outranks a larger one whose default only leaves it
+*incomplete*. "Report 47,000 as unexplained" is honest and unfinished;
+"treat these repeated rows as real" silently picks one of two different
+numbers. `questions.py` returns `risk_if_assumed` for this.
+
+**Phrase every question as a default to confirm**, never open-ended — an open
+question makes the client think, a default makes them check. Always give the
+amount at stake, the evidence that prompted it, two or three concrete options,
+and a don't-know path, because a guessed answer is worse than a recorded
+uncertainty.
+
+Do not lead ("these are duplicates, right?"), do not ask the client to
+classify the finding, and never hide an assumption to avoid a question — an
+unstated assumption is the failure this protocol exists to prevent.
+
+If nobody is there to answer, apply every default, mark each as an assumption
+with its amount, and rank the questions in the report's open-questions
+section. Do not stall.
 
 ## Known traps
 

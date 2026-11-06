@@ -60,6 +60,7 @@ Each prints JSON; read it before choosing the next step.
 | `detect_reversals.py` | signal, priority 60 | `side:movements` only |
 | `resolve_signals.py` | `signals` | `equation` |
 | `residual.py` | `residual` | `side:movements` |
+| `questions.py --budget N` | `questions` | `equation` |
 | `summarize.py --out DIR` | `metrics` | `equation` |
 
 All state is plain CSV and JSON in the run directory, deliberately: the caller
@@ -83,6 +84,14 @@ its own file with an explicit priority, and `resolve_signals` merges them, so
 **detector order does not affect the result**. Run them in any sequence or in
 parallel. Without this, first-match-wins would make the same break get
 different labels depending on an arbitrary sequencing choice.
+
+**Priced questions.** `questions.py` turns the surviving uncertainties into a
+ranked set, splitting them into what to ask and what to assume. It exists so
+that deciding what to ask the client is deterministic rather than a matter of
+feel: a question has to be backed by an amount, cannot be something the data
+already settled, and carries `risk_if_assumed` so a smaller irreducibly-human
+question is not crowded out by a larger mechanical one. The interview protocol
+that consumes it is in the orchestrator skill.
 
 **Coverage reporting.** `summarize` lists which detectors did not run, as
 caveats in its output. A cause you did not test for is not a cause you ruled

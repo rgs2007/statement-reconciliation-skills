@@ -82,8 +82,19 @@ def main() -> None:
                         f"{'adjacent' if adjacent else 'non-adjacent'}"})
 
     st.write_signals("duplicates", rows)
+    # Global evidence, persisted separately: consecutive repeats may exist
+    # without equalling any one account's gap, so no per-key signal is set —
+    # but the ambiguity is still real and still has to be asked about.
+    st.write_json("dup_stats", {
+        "duplicate_rows": int(dmask.sum()),
+        "duplicate_gross": round(float(mv.loc[dmask, "_amt"].abs().sum()), 2),
+        "consecutive_duplicate_rows": int(consec.sum()),
+        "consecutive_gross": round(
+            float(mv.loc[consec, "_amt"].abs().sum()), 2),
+        "keys_flagged": [r["key"] for r in rows],
+    })
     st.record("detect-duplicates", params={"materiality": a.materiality},
-              inputs=["equation", "side:movements"])
+              inputs=["equation", "side:movements"], outputs=["dup_stats"])
     emit({"ok": True, "step": "detect-duplicates",
           "duplicate_rows": int(dmask.sum()),
           "duplicate_gross": round(float(mv.loc[dmask, "_amt"].abs().sum()), 2),

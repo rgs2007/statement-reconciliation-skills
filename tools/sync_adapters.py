@@ -100,7 +100,7 @@ def rewrite_paths(s: str) -> str:
     return s
 
 
-MARKERS = ["core-rules", "shape", "skills", "plan", "traps"]
+MARKERS = ["core-rules", "shape", "skills", "plan", "interview", "traps"]
 
 
 # ------------------------------------------------------------------ renderers
@@ -139,7 +139,7 @@ rationale and a confidence level.
 
 {pointer_note()}
 
-{common_body(text, include=["skills", "plan", "traps"])}
+{common_body(text, include=["skills", "plan", "interview", "traps"])}
 
 ## Verifying your environment
 
@@ -192,7 +192,7 @@ are not installed.
 
 {pointer_note()}
 
-{common_body(text, include=["skills", "plan", "traps"])}
+{common_body(text, include=["skills", "plan", "interview", "traps"])}
 
 ## Working on this repository
 
@@ -231,7 +231,7 @@ file references below are followed, so the full method is one hop away.
 
 {pointer_note()}
 
-{common_body(text, include=["skills", "plan", "traps"])}
+{common_body(text, include=["skills", "plan", "interview", "traps"])}
 
 ## Checks
 
@@ -263,7 +263,7 @@ these yourself when you need them:
 `{SKILL_DIR}/references/<phase>.md` for discovery, intake, matching, taxonomy,
 confidence and reporting.
 
-{common_body(text, include=["core-rules", "shape", "skills", "plan", "traps"])}
+{common_body(text, include=["core-rules", "shape", "skills", "plan", "interview", "traps"])}
 """
 
 
@@ -288,7 +288,7 @@ alwaysApply: false
 
 {pointer_note()}
 
-{common_body(text, include=["skills", "plan", "traps"])}
+{common_body(text, include=["skills", "plan", "interview", "traps"])}
 """
 
 

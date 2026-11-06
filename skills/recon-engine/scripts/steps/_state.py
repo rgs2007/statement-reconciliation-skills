@@ -50,6 +50,8 @@ ARTIFACTS: dict[str, tuple[str, str]] = {
     "signals":        ("signals.merged.csv", "resolve-signals"),
     "residual":       ("residual.csv", "residual"),
     "metrics":        ("metrics.json", "summarize"),
+    "questions":      ("questions.json", "questions"),
+    "dup_stats":      ("duplicate_stats.json", "detect-duplicates"),
 }
 
 STEPS_DIR = "_steps"

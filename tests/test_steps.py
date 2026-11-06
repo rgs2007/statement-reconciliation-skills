@@ -176,3 +176,64 @@ def test_summarize_reports_skipped_detectors(work) -> None:
     assert any("detect-duplicates" in c for c in m["caveats"]), (
         "a skipped detector must appear in the caveats, not just in coverage")
     assert any("No decision log" in c for c in m["caveats"])
+
+
+def test_questions_asks_nothing_that_arithmetic_already_settled(work) -> None:
+    """Offsetting pairs, decimal shifts and duplicates are proven, not asked."""
+    run_full_plan(work)
+    r = step("questions", "--run", "run", cwd=work)
+    assert r.returncode == 0, f"questions failed:\n{r.stdout}{r.stderr}"
+    out = json.loads(r.stdout)
+
+    settled = {s["topic"] for s in out["settled_by_arithmetic"]}
+    assert {"SUBACCOUNT_MISATTRIBUTION", "DECIMAL_SHIFT",
+            "DUPLICATE_POSTING"} <= settled, (
+        "causes proven by arithmetic must be reported as settled")
+
+    asked = {q["topic"] for q in out["ask"]} | {q["topic"] for q in out["assume"]}
+    assert not (asked & settled), (
+        f"these were already proven and must not be asked about: "
+        f"{sorted(asked & settled)}")
+
+
+def test_question_budget_is_respected(work) -> None:
+    run_full_plan(work)
+    for budget in (1, 2, 3):
+        r = step("questions", "--run", "run", "--budget", str(budget), cwd=work)
+        out = json.loads(r.stdout)
+        assert len(out["ask"]) <= budget
+        # nothing is dropped: what is not asked comes back to be stated
+        for q in out["assume"]:
+            assert q["default_if_unanswered"], (
+                "an unasked question must carry the default that was applied")
+
+
+def test_unsafe_default_outranks_a_larger_safe_one(work) -> None:
+    """A question the data cannot settle must not be crowded out by amount.
+
+    Assuming "report it as unexplained" leaves the answer incomplete, which is
+    honest. Assuming a page-break artifact is or is not real picks one of two
+    different numbers, which can be wrong — so it has to be asked even when a
+    larger mechanical question exists.
+    """
+    r = step("questions", "--run", "nope", cwd=work)
+    assert r.returncode == 2  # precondition guard still applies
+
+    run_full_plan(work)
+    out = json.loads(step("questions", "--run", "run", cwd=work).stdout)
+    for q in out["ask"] + out["assume"]:
+        assert q["risk_if_assumed"] in ("wrong", "incomplete")
+        if q["risk_if_assumed"] == "wrong":
+            assert q["must_state_explicitly"] is True, (
+                "an unsafe default must always be stated, even when unasked")
+
+
+def test_every_question_is_backed_by_an_amount_and_a_default(work) -> None:
+    """No question may be vague: the protocol depends on these fields."""
+    run_full_plan(work)
+    out = json.loads(step("questions", "--run", "run", cwd=work).stdout)
+    for q in out["ask"] + out["assume"]:
+        assert q["amount_at_stake"] > 0, f"{q['id']} has no amount at stake"
+        assert len(q["options"]) >= 2, f"{q['id']} offers no real choice"
+        assert q["default_if_unanswered"], f"{q['id']} has no default"
+        assert q["why_it_matters"], f"{q['id']} does not say why it matters"
