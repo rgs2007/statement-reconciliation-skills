@@ -135,10 +135,36 @@ describe('Cell', () => {
 })
 
 describe('NotebookPane', () => {
-  it('explains what to do when empty instead of showing a blank pane', () => {
+  // The empty pane is the largest surface in the window, so it carries the
+  // call to action rather than describing one. Both halves are asserted
+  // because text without a control is what made the app unclear.
+  it('offers a dropzone and a button when there is nothing yet', () => {
     render(<NotebookPane cells={[]} />)
-    expect(screen.getByText('The notebook is empty')).toBeInTheDocument()
-    expect(screen.getByText(/Drop|Add your statement files/)).toBeInTheDocument()
+    expect(screen.getByText('Start by adding your statements')).toBeInTheDocument()
+    expect(screen.getByTestId('notebook-dropzone')).toBeInTheDocument()
+    expect(screen.getByText(/Drag CSV, Excel or PDF/)).toBeInTheDocument()
+  })
+
+  it('numbers the steps so what follows the upload is visible too', () => {
+    render(<NotebookPane cells={[]} />)
+    expect(screen.getByText(/Confirm what each file is/)).toBeInTheDocument()
+    expect(screen.getByText(/in any language/)).toBeInTheDocument()
+  })
+
+  it('wires the empty-state button to the picker', async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn()
+    render(<NotebookPane cells={[]} onAdd={onAdd} />)
+    await user.click(screen.getByTestId('empty-add-files'))
+    expect(onAdd).toHaveBeenCalledOnce()
+  })
+
+  // Once files are in, repeating "add your statements" would be telling the
+  // user to do what they have already done; the prompt moves to the next step.
+  it('switches the prompt to asking once files are present', () => {
+    render(<NotebookPane cells={[]} hasFiles onAdd={() => undefined} />)
+    expect(screen.queryByTestId('notebook-dropzone')).toBeNull()
+    expect(screen.getByText('Files are in. Ask away.')).toBeInTheDocument()
   })
 
   it('renders cells in order', () => {

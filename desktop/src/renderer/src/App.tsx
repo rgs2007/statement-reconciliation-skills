@@ -306,7 +306,13 @@ export function App(): JSX.Element {
           </aside>
 
           <section className="min-w-0 flex-1 overflow-y-auto" data-testid="notebook-pane">
-            {s.metrics && !s.notebook.some((c) => c.kind === 'metrics') ? (
+            {/* A run whose source files are no longer in the project is stale
+                by definition — the hashes it was computed from are gone — and
+                showing it here pushes the one thing the user needs to do
+                below the fold. */}
+            {project.files.length > 0 &&
+            s.metrics &&
+            !s.notebook.some((c) => c.kind === 'metrics') ? (
               <div className="p-5 pb-0">
                 <div className="card p-4">
                   <h3 className="mb-3 text-sm font-semibold text-ink-100">
@@ -326,7 +332,12 @@ export function App(): JSX.Element {
                 </div>
               </div>
             ) : null}
-            <NotebookPane cells={s.notebook} onRemove={(id) => s.removeCell(id)} />
+            <NotebookPane
+              cells={s.notebook}
+              onRemove={(id) => s.removeCell(id)}
+              onAdd={() => void pickFiles()}
+              hasFiles={project.files.length > 0}
+            />
           </section>
 
           <aside className="flex w-[30rem] shrink-0 flex-col border-l border-ink-800">

@@ -20,6 +20,7 @@ import {
   YAxis
 } from 'recharts'
 import type { NotebookCell, ReconMetrics } from '@shared/types'
+import { UploadIcon } from './Sidebar'
 import { health, money, percent } from '../lib/format'
 import { BRAND } from '../theme/brand'
 
@@ -261,26 +262,93 @@ export function Cell({
   )
 }
 
-export function NotebookPane({
-  cells,
-  onRemove
+/**
+ * What an empty project looks like, and the main reason it was redesigned:
+ * this pane is the largest surface in the window, so when it only described
+ * what to do and offered nothing to click, the first question the app
+ * provoked was where to upload a file. The whole area is now the drop target
+ * and carries the button, with the three steps named in order so it is clear
+ * what happens after the upload too.
+ */
+function EmptyNotebook({
+  onAdd,
+  hasFiles
 }: {
-  cells: NotebookCell[]
-  onRemove?: (id: string) => void
+  onAdd?: () => void
+  hasFiles: boolean
 }): JSX.Element {
-  if (!cells.length) {
+  if (hasFiles) {
     return (
       <div className="flex h-full items-center justify-center p-10">
         <div className="max-w-md text-center">
-          <h2 className="text-base font-semibold text-ink-200">The notebook is empty</h2>
+          <h2 className="text-base font-semibold text-ink-200">Files are in. Ask away.</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-500">
-            Add your statement files, then ask on the right why they do not tie out. Findings,
-            tables, charts and reports appear here as the reconciliation progresses, and they
-            are saved with the project.
+            Ask on the right why they do not tie out — in any language. Findings, tables, charts
+            and reports appear here as the reconciliation progresses, and they are saved with
+            the project.
           </p>
         </div>
       </div>
     )
+  }
+
+  return (
+    <div className="flex h-full items-center justify-center p-10">
+      <div
+        className="w-full max-w-md rounded-xl border-2 border-dashed border-ink-700 p-10 text-center"
+        data-testid="notebook-dropzone"
+      >
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-flow-500/10 text-flow-400">
+          <UploadIcon className="h-6 w-6" />
+        </div>
+        <h2 className="text-base font-semibold text-ink-100">Start by adding your statements</h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-500">
+          Drag CSV, Excel or PDF files anywhere onto this window — or browse for them.
+        </p>
+        {onAdd ? (
+          <button
+            type="button"
+            onClick={onAdd}
+            data-testid="empty-add-files"
+            className="btn-primary mx-auto mt-5 gap-1.5"
+          >
+            <UploadIcon />
+            Choose files
+          </button>
+        ) : null}
+
+        <ol className="mt-8 space-y-2 text-left text-xs text-ink-500">
+          {[
+            'Add the statements you want reconciled',
+            'Confirm what each file is, on the left',
+            'Ask why they do not tie out — in any language'
+          ].map((step, i) => (
+            <li key={step} className="flex gap-2.5">
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-ink-800 text-[10px] text-ink-400">
+                {i + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  )
+}
+
+export function NotebookPane({
+  cells,
+  onRemove,
+  onAdd,
+  hasFiles = false
+}: {
+  cells: NotebookCell[]
+  onRemove?: (id: string) => void
+  onAdd?: () => void
+  hasFiles?: boolean
+}): JSX.Element {
+  if (!cells.length) {
+    return <EmptyNotebook onAdd={onAdd} hasFiles={hasFiles} />
   }
 
   return (
