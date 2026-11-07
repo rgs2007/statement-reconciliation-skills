@@ -29,6 +29,7 @@ const api: DesktopApi = {
     create: (name: string, parentDir?: string) => ipcRenderer.invoke('project:create', name, parentDir),
     open: (folder: string) => ipcRenderer.invoke('project:open', folder),
     pickFolder: () => ipcRenderer.invoke('project:pickFolder'),
+    pickFiles: () => ipcRenderer.invoke('project:pickFiles'),
     recent: () => ipcRenderer.invoke('project:recent'),
     addFiles: (folder: string, paths: string[]) => ipcRenderer.invoke('project:addFiles', folder, paths),
     setRole: (folder: string, relPath: string, role: DatasetRole | null) =>

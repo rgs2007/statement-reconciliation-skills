@@ -144,6 +144,7 @@ export interface DesktopApi {
     create(name: string, parentDir?: string): Promise<ProjectState>
     open(folder: string): Promise<ProjectState>
     pickFolder(): Promise<string | null>
+    pickFiles(): Promise<string[]>
     recent(): Promise<ProjectSummary[]>
     addFiles(folder: string, paths: string[]): Promise<ProjectFile[]>
     setRole(folder: string, relPath: string, role: DatasetRole | null): Promise<ProjectFile[]>

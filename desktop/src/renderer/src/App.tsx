@@ -201,6 +201,14 @@ export function App(): JSX.Element {
     s.setFiles(files)
   }
 
+  const pickFiles = async (): Promise<void> => {
+    if (!project) return
+    const paths = await window.api.project.pickFiles()
+    if (!paths.length) return
+    const files = await window.api.project.addFiles(project.summary.folder, paths)
+    s.setFiles(files)
+  }
+
   const send = async (text: string): Promise<void> => {
     if (!project) return
     s.addMessage({ id: `u-${Date.now()}`, role: 'user', text, at: new Date().toISOString() })
@@ -274,7 +282,11 @@ export function App(): JSX.Element {
           <aside className="w-60 shrink-0 space-y-5 overflow-y-auto border-r border-ink-800 p-4">
             <section>
               <div className="label mb-2">Files</div>
-              <FileList files={project.files} onRole={(p, r) => void setRole(p, r)} />
+              <FileList
+                files={project.files}
+                onRole={(p, r) => void setRole(p, r)}
+                onAdd={() => void pickFiles()}
+              />
             </section>
             <section>
               <div className="label mb-2">Reports</div>

@@ -318,9 +318,34 @@ describe('FileList', () => {
     expect(onRole).toHaveBeenCalledWith('sources/initial_balance.csv', null)
   })
 
-  it('tells the user how to add files when there are none', () => {
+  it('tells the user what to add when there are none', () => {
     render(<FileList files={[]} onRole={() => undefined} />)
-    expect(screen.getByText(/Drop CSV, Excel or PDF/)).toBeInTheDocument()
+    expect(screen.getByText(/CSV, Excel or PDF/)).toBeInTheDocument()
+  })
+
+  // Drag and drop alone is undiscoverable — the button has to be visible in
+  // both states, or an empty project is a dead end and a populated one has
+  // no way to grow.
+  it('offers a visible way in when the project is empty', async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn()
+    render(<FileList files={[]} onRole={() => undefined} onAdd={onAdd} />)
+    await user.click(screen.getByTestId('add-files'))
+    expect(onAdd).toHaveBeenCalledOnce()
+  })
+
+  it('keeps that way in once files are listed', async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn()
+    render(<FileList files={[file]} onRole={() => undefined} onAdd={onAdd} />)
+    await user.click(screen.getByTestId('add-files'))
+    expect(onAdd).toHaveBeenCalledOnce()
+    expect(screen.getByText('initial_balance.csv')).toBeInTheDocument()
+  })
+
+  it('renders without a button where adding is not offered', () => {
+    render(<FileList files={[file]} onRole={() => undefined} />)
+    expect(screen.queryByTestId('add-files')).toBeNull()
   })
 })
 

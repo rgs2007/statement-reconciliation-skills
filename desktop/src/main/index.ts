@@ -150,6 +150,22 @@ function registerIpc(): void {
     return r.canceled ? null : r.filePaths[0]
   })
 
+  // Drag and drop was the only way in, which is undiscoverable: someone who
+  // has not been told stands in front of a window with nowhere to click. The
+  // filters are a convenience, not a gate — the engine decides what it can
+  // read, so "All files" stays available for the odd .txt extract.
+  ipcMain.handle('project:pickFiles', async () => {
+    const r = await dialog.showOpenDialog({
+      properties: ['openFile', 'multiSelections'],
+      title: 'Add statement files',
+      filters: [
+        { name: 'Statements', extensions: ['csv', 'tsv', 'txt', 'xlsx', 'xls', 'xlsm', 'pdf'] },
+        { name: 'All files', extensions: ['*'] }
+      ]
+    })
+    return r.canceled ? [] : r.filePaths
+  })
+
   ipcMain.handle('project:create', (_e, name: string, parentDir?: string) => {
     const parent = parentDir ?? join(app.getPath('documents'), 'FlowingSoft Reconciler')
     mkdirSync(parent, { recursive: true })
