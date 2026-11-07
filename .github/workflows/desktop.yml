@@ -46,6 +46,10 @@ jobs:
           cache-dependency-path: desktop/package-lock.json
 
       - run: npm ci
+      # electron-builder packages whatever is in out/; it does not build.
+      # Running it alone produced an installer-less failure.
+      - name: Build the app
+        run: npx electron-vite build
       - name: Build the Windows installer
         run: npx electron-builder --win --publish never
       - uses: actions/upload-artifact@v4
