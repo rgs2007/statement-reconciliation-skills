@@ -13,6 +13,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -218,7 +219,7 @@ export function Cell({
             cell.series.length ? (
               <div className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cell.series} layout="vertical" margin={{ left: 8, right: 16 }}>
+                  <BarChart data={cell.series} layout="vertical" margin={{ left: 8, right: 104 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#373d4a" horizontal={false} />
                     <XAxis type="number" tick={{ fill: '#818da2', fontSize: 11 }} />
                     <YAxis
@@ -236,7 +237,17 @@ export function Cell({
                         fontSize: 12
                       }}
                     />
-                    <Bar dataKey="value" fill={BRAND.colors.primary} radius={[0, 3, 3, 0]} />
+                    <Bar dataKey="value" fill={BRAND.colors.primary} radius={[0, 3, 3, 0]}>
+                      {/* One cause routinely dwarfs the rest by three orders
+                          of magnitude, which leaves the others a pixel wide.
+                          The label is what makes them readable at all. */}
+                      <LabelList
+                        dataKey="value"
+                        position="right"
+                        formatter={(v: number) => money(v)}
+                        style={{ fill: '#aeb6c4', fontSize: 11 }}
+                      />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

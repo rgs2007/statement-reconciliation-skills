@@ -21,7 +21,7 @@ can back up, move or hand to a colleague.
 cd desktop
 npm install
 npm run dev          # development, with hot reload
-npm test             # 186 unit tests
+npm test             # 187 unit tests
 npm run typecheck
 npm run dist:win     # build the Windows installer (NSIS) into release/
 ```
@@ -91,7 +91,7 @@ the renderer is our own code.
 ## Tests
 
 ```bash
-npm test                  # 186 tests
+npm test                  # 187 tests
 npm run test:coverage
 ```
 

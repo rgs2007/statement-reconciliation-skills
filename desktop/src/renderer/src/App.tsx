@@ -106,7 +106,25 @@ export function App(): JSX.Element {
 
   useEffect(() => {
     void window.api.claude.status().then((st) => useApp.getState().setInstall(st))
-    void window.api.project.recent().then((r) => useApp.getState().setRecent(r))
+
+    // Reopen the project that was last worked on. A reconciliation spans
+    // days and the whole point of the project folder is that it continues
+    // where it stopped, so landing on a welcome screen every launch would
+    // put a click between the user and their own work. If the folder has
+    // since been moved or deleted, fall back to the welcome screen rather
+    // than failing to start.
+    void window.api.project.recent().then(async (r) => {
+      useApp.getState().setRecent(r)
+      const last = r[0]
+      if (!last || useApp.getState().project) return
+      try {
+        const st = await window.api.project.open(last.folder)
+        useApp.getState().setProject(st)
+        await refreshDerived(last.folder)
+      } catch {
+        // Its folder is gone; the welcome screen lists the rest.
+      }
+    })
     const offStatus = window.api.claude.onStatus((st) => useApp.getState().setInstall(st))
 
     const offChat = window.api.chat.onEvent((ev) => {

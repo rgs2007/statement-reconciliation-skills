@@ -128,3 +128,25 @@ describe('project', () => {
     expect(useApp.getState().project).toBeNull()
   })
 })
+
+describe('resume', () => {
+  it('a reopened project restores its notebook, files and session', () => {
+    // The project folder exists so work continues across days; losing any of
+    // these on reopen would make the user redo discovery.
+    useApp.getState().setProject({
+      summary: { id: 'p', name: 'Acme', folder: '/p', createdAt: 'now', lastOpenedAt: 'now' },
+      files: [
+        { relPath: 'sources/opening.csv', name: 'opening.csv', bytes: 1, sha256: 'a', addedAt: 'now', role: 'opening', rows: 12 }
+      ],
+      notebook: [{ id: 'c1', kind: 'markdown', title: 'Scope', body: 'Jan', createdAt: 'now' }],
+      claudeSessionId: 'sess-abc',
+      memory: '# MEMORY',
+      decisionCount: 4
+    })
+    const st = useApp.getState()
+    expect(st.notebook).toHaveLength(1)
+    expect(st.project?.files[0].role).toBe('opening')
+    expect(st.project?.claudeSessionId).toBe('sess-abc')
+    expect(st.project?.decisionCount).toBe(4)
+  })
+})
